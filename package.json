@@ -34,9 +34,6 @@
     "yaml": "^1.10.2"
   },
   "scripts": {
-    "build:tailwind": "tailwindcss build src/styles/tailwind.css -o src/styles/tailwind.output.css",
-    "prestart": "npm run build:tailwind",
-    "prebuild": "npm run build:tailwind",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -61,6 +58,8 @@
     ]
   },
   "devDependencies": {
-    "@types/uuid": "^8.3.4"
+    "@types/uuid": "^8.3.4",
+    "autoprefixer": "^10.4.2",
+    "postcss": "^8.4.6"
   }
 }
