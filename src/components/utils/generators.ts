@@ -1,66 +1,14 @@
-import { IClientNodeItem } from "../../objects/designer";
+import {
+  IClientNodeItem,
+  IWorkflowStep,
+  ITemplate,
+  IWorkflow
+} from "../../objects/designer";
 import { Dictionary, find } from "lodash";
 import { ensure } from "./index";
 
 interface IFlatConnection {
   target: string;
-}
-
-interface IGenerateName {
-  generateName: string;
-}
-
-interface IResource {
-  action: string;
-  successCondition: string;
-  failureCondition: string;
-  manifest: string;
-}
-
-interface IStep {
-  name: string;
-  template: string;
-}
-
-interface IStepTemplate {
-  name: string;
-  steps: Array<IStep>;
-}
-
-interface IArgument {
-  name: string;
-  value: string;
-}
-
-interface IOutput {
-  name: string;
-  valueFrom: object;
-}
-
-interface IContainerTemplate {
-  name: string;
-  inputs: {
-    parameters: IArgument[];
-  }
-  resource: IResource;
-  outputs: {
-    parameters: IOutput[];
-  }
-}
-
-interface ISpec {
-  arguments: {
-    parameters: IArgument[];
-  }
-  entrypoint: string;
-  templates: Array<IStepTemplate | IContainerTemplate>;
-}
-
-interface IArgoTemplate {
-  apiVersion: string;
-  kind: string;
-  metadata: IGenerateName;
-  spec: ISpec;
 }
 
 const getEntrypoint = (
@@ -79,11 +27,11 @@ const getEntrypoint = (
   return entrypointNode;
 }
 
-const getWorkflowStepTemplates = (
+const generateTemplateInvocator = (
   entrypoint: IClientNodeItem,
   graphNodes: Dictionary<IClientNodeItem>,
-  connections: Dictionary<IFlatConnection> | undefined): IStepTemplate => {
-    let ret: IStepTemplate = {
+  connections: Dictionary<IFlatConnection> | undefined): ITemplate => {
+    const ret: ITemplate = {
       name: "",
       steps: []
     };
@@ -98,11 +46,11 @@ const getWorkflowStepTemplates = (
 
       const currentConnection: any = connections[currentNodeId];
       const currentNode: IClientNodeItem = graphNodes[currentNodeId];
-      const nodeStepTemplate: IStep = {
+      const nodeStepTemplate: IWorkflowStep = {
         name: currentNode.configuration.name,
         template: currentNode.configuration.name
       };
-      ret.steps.push(nodeStepTemplate);
+      ret.steps!.push(nodeStepTemplate);
 
       if (currentConnection) {
         currentNodeId = currentConnection["target"];
@@ -115,67 +63,84 @@ const getWorkflowStepTemplates = (
     return ret;
 }
 
-const getWorkflowContainerTemplates = (
-  graphNodes: Dictionary<IClientNodeItem>): IContainerTemplate[] | [] => {
-  let ret: IContainerTemplate[] = [];
+const getImageString = (container: any): string => {
+  const imageVersion = container.imageVersion;
+
+  if (imageVersion) {
+    return `${container.image}:${container.imageVersion}`;
+  }
+
+  return container.image;
+}
+
+const generateManifest = (manifest: any): string => {
+  return JSON.stringify(manifest);
+}
+
+const generateTemplateDefinitions = (
+  graphNodes: Dictionary<IClientNodeItem>): ITemplate[] | [] => {
+  let ret: ITemplate[] = [];
   for (const [, value] of Object.entries(graphNodes)) {
     const node = value as IClientNodeItem;
 
     if (node["type"] !== "START") {
-      const nodeTemplate: IContainerTemplate = {
-        name: node["configuration"]["name"],
-        inputs: {
-          parameters: []
-        },
-        resource: {
-          action: node["configuration"]["action"],
-          successCondition: node["configuration"]["successCondition"],
-          failureCondition: node["configuration"]["failureCondition"],
-          manifest: JSON.stringify(node["configuration"]["manifest"])
-        },
-        outputs: {
-          parameters: []
-        }
+      const template: ITemplate = {
+        name: node.configuration.name
       };
-      ret.push(nodeTemplate);
+
+      if (node.configuration.type === "container") {
+        if (node.configuration.container) {
+          template.container = {
+            name: node.configuration.container.name,
+            image: getImageString(node.configuration.container),
+            imagePullPolicy: node.configuration.container.imagePullPolicy
+          };
+        }
+      }
+
+      if (node.configuration.type === "resource") {
+        if (node.configuration.resource) {
+          template.resource = {
+            action: node.configuration.resource.action,
+            manifest: generateManifest(node.configuration.resource.manifest)
+          };
+        }
+      }
+
+      ret.push(template);
     }
   }
 
   return ret;
 }
 
-export const generateArgoTemplate = (graphData: any): IArgoTemplate => {
+export const generateWorkflowTemplate = (graphData: any): IWorkflow => {
   const nodes = graphData["nodes"];
   const connections = graphData["connections"];
-  let baseTemplate: IArgoTemplate = {
+  const base: IWorkflow = {
     apiVersion: "argoproj.io/v1alpha1",
     kind: "Workflow",
     metadata: {
       generateName: "k8s-orchestrate-"
     },
     spec: {
-      arguments: {
-        parameters: []
-      },
       entrypoint: "",
       templates: []
     }
   };
-
-  // set entrypoint
   let entrypoint: IClientNodeItem | null = null;
+
   entrypoint = (connections && Object.keys(connections).length) ? getEntrypoint(nodes, connections) : null;
 
   if (entrypoint) {
-    // set step templates
-    const steps: IStepTemplate = getWorkflowStepTemplates(entrypoint, nodes, connections);
-    baseTemplate.spec.entrypoint = entrypoint.configuration.name;
-    baseTemplate["spec"]["templates"].push(steps);
+    const templateInvocator: ITemplate = generateTemplateInvocator(entrypoint, nodes, connections);
+    base.spec.entrypoint = entrypoint.configuration.name;
+    base["spec"]["templates"].push(templateInvocator);
   }
 
   // set templates
-  getWorkflowContainerTemplates(nodes).forEach((x) => {
-    baseTemplate["spec"]["templates"].push(x)
+  generateTemplateDefinitions(nodes).forEach((x) => {
+    base["spec"]["templates"].push(x)
   });
-  return baseTemplate;
+  return base;
 }

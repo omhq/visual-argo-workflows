@@ -68,7 +68,6 @@ path,
 
 .code-column {
   background-color: #282C34;
-  min-height: inherit;
 }
 
 .cke_reset_all .CodeMirror-scroll * {

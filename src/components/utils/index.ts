@@ -15,8 +15,19 @@ import {
   IClientNodeItem,
   IServiceNodeItem,
   IWorkflowLibraryItem,
-  IWorkflowSection
+  IWorkflowSection,
+  IContainer,
+  IResourceTemplate
 } from "../../objects/designer";
+
+interface IConf {
+  prettyName: string;
+  name:  string;
+  description:  string;
+  type: string;
+  container?: IContainer;
+  resource?: IResourceTemplate
+}
 
 export function ensure<T>(argument: T | undefined | null, message: string = 'This value was promised to be there.'): T {
   if (argument === undefined || argument === null) {
@@ -174,7 +185,25 @@ export const getClientNodesAndConnections = (
   return [keyBy(clientItems, (x) => x.key), connections];
 }
 
-export const getNodeKeyFromConnectionId = (Uuid: string) => {
-  let key = Uuid.substr(Uuid.lastIndexOf("_") + 1);
+export const getNodeKeyFromConnectionId = (uuid: string) => {
+  let key = uuid.substr(uuid.lastIndexOf("_") + 1);
   return key;
+}
+
+export const initialValues = (): IConf => {
+  return {
+    prettyName: "Unnamed",
+    name: "unnamed",
+    description: "",
+    type: "container",
+    container: {
+      name: "whalesay",
+      image: "docker/whalesay",
+      imagePullPolicy: "always"
+    },
+    resource: {
+      action: "create",
+      manifest: ""
+    }
+  }
 }

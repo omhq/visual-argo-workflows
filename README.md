@@ -38,3 +38,4 @@ Your app is ready to be deployed!
 
 - https://infosecinnovations.github.io/project-fantastic/2020/12/18/introduction-to-jsplumb.html
 - https://sourcegraph.com/github.com/argoproj/argo-workflows/-/tree/examples
+- https://argoproj.github.io/argo-workflows/fields/
