@@ -1,3 +1,7 @@
+body {
+  overflow: hidden;
+}
+
 .canvas {
   overflow: hidden;
   background-size: 16px 16px;
@@ -67,6 +71,8 @@ path,
 }
 
 .code-column {
+  height: 100vh;
+  overflow-y: scroll;
   background-color: #282C34;
 }
 
