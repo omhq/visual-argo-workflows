@@ -326,7 +326,7 @@ export const WorkflowCanvas: React.FC<IWorkflowCanvasProps> = (props) => {
             </div>
           </div>
 
-          <div className="relative code-column w-full h-full min-h-screen md:w-1/3 bg-gray-800">
+          <div className="relative code-column w-full md:w-1/3 bg-gray-800">
             <div className="absolute top-0 right-0 z-40">
               <div className="flex space-x-2 p-2">
                 <button className="btn-util" type="button" onClick={copy}>{copyText}</button>
