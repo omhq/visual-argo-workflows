@@ -11,24 +11,12 @@ interface IFlatConnection {
   target: string;
 }
 
-const getEntrypoint = (
-  graphNodes: Dictionary<IClientNodeItem>,
-  connections: Dictionary<IFlatConnection>): IClientNodeItem | null => {
-  const start: IClientNodeItem = ensure(find(graphNodes, { type: "START" }));
-  const startConnections = connections[start.key];
-  let entrypointNode: IClientNodeItem;
-
-  if (startConnections) {
-    entrypointNode = graphNodes[startConnections["target"]];
-  } else {
-    return null;
-  }
-
-  return entrypointNode;
+const getFirstNode = (graphNodes: Dictionary<IClientNodeItem>): IClientNodeItem | null => {
+  return ensure(find(graphNodes, { type: "START" }));
 }
 
 const generateTemplateInvocator = (
-  entrypoint: IClientNodeItem,
+  firstNode: IClientNodeItem,
   graphNodes: Dictionary<IClientNodeItem>,
   connections: Dictionary<IFlatConnection> | undefined): ITemplate => {
     const ret: ITemplate = {
@@ -36,8 +24,8 @@ const generateTemplateInvocator = (
       steps: []
     };
 
-    let currentNodeId: string = entrypoint.key;
-    ret.name = entrypoint.configuration.name;
+    let currentNodeId: string = firstNode.key;
+    ret.name = firstNode.configuration.name;
 
     while (currentNodeId.length) {
       if (!connections) {
@@ -45,14 +33,14 @@ const generateTemplateInvocator = (
       }
 
       const currentConnection: any = connections[currentNodeId];
-      const currentNode: IClientNodeItem = graphNodes[currentNodeId];
-      const nodeStepTemplate: IWorkflowStep = {
-        name: currentNode.configuration.name,
-        template: currentNode.configuration.name
-      };
-      ret.steps!.push(nodeStepTemplate);
-
       if (currentConnection) {
+        const nextNode: IClientNodeItem = graphNodes[currentConnection["target"]];
+        const nodeStepTemplate: IWorkflowStep = {
+          name: nextNode.configuration.name,
+          template: nextNode.configuration.name
+        };
+  
+        ret.steps!.push(nodeStepTemplate);
         currentNodeId = currentConnection["target"];
         continue;
       }
@@ -114,6 +102,29 @@ const generateTemplateDefinitions = (
   return ret;
 }
 
+const getTotalSteps = (
+  start: string,
+  connections: Dictionary<IFlatConnection> | undefined): number => {
+  let head: string | null = start;
+  let count = 0;
+
+  if (!connections) {
+    return 0;
+  }
+
+  while (head) {
+    const connection: IFlatConnection = connections[head];
+    if (connection) {
+      count++;
+      head = connection['target'];
+    } else {
+      head = null;
+    }
+  }
+
+  return count;
+}
+
 export const generateWorkflowTemplate = (graphData: any): IWorkflow => {
   const nodes = graphData["nodes"];
   const connections = graphData["connections"];
@@ -128,14 +139,21 @@ export const generateWorkflowTemplate = (graphData: any): IWorkflow => {
       templates: []
     }
   };
-  let entrypoint: IClientNodeItem | null = null;
 
-  entrypoint = (connections && Object.keys(connections).length) ? getEntrypoint(nodes, connections) : null;
+  let firstNode: IClientNodeItem | null = (connections && Object.keys(connections).length) ? getFirstNode(nodes) : null;
 
-  if (entrypoint) {
-    const templateInvocator: ITemplate = generateTemplateInvocator(entrypoint, nodes, connections);
-    base.spec.entrypoint = entrypoint.configuration.name;
-    base["spec"]["templates"].push(templateInvocator);
+  if (firstNode) {
+    const totalSteps = getTotalSteps(firstNode.key, connections);
+
+    if (totalSteps >= 2) {
+      const templateInvocator: ITemplate = generateTemplateInvocator(firstNode, nodes, connections);
+      base.spec.entrypoint = firstNode.configuration.name;
+      base.spec.templates.push(templateInvocator);
+    }
+
+    if (totalSteps === 1) {
+      base.spec.entrypoint = nodes[connections[firstNode.key]["target"]].configuration.name;
+    }
   }
 
   // set templates
