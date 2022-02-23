@@ -14,10 +14,6 @@ interface IModalProps {
   onUpdateEndpoint: any;
 }
 
-function hide() {
-  console.log('hide modal');
-}
-
 const ModalEdit = (props: IModalProps) => {
   const { node, onHide, onUpdateEndpoint } = props;
   const [selectedNode, setSelectedNode] = React.useState<IClientNodeItem | null>(null);
