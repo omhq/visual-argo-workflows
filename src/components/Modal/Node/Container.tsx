@@ -1,6 +1,3 @@
-import React from "react";
-
-
 const Container = (props: any) => {
   const { formik } = props;
 
@@ -53,4 +50,5 @@ const Container = (props: any) => {
     </>
   )
 }
+
 export default Container;

@@ -9,14 +9,23 @@ export const workflowLibraries: IWorkflowSection[] = [
     Description: "Sources",
     Operations: [
       {
-        Id: 1,
-        Name: "Start",
-        Type: "START",
-        Description: "Start here",
+        Id: 0,
+        Name: "entrypoint",
+        Type: "ENTRYPOINT",
+        Description: "entrypoint",
         NoInputs: 0,
         NoOutputs: 1,
         IsActive: true
       },
+      {
+        Id: 1,
+        Name: "onExit",
+        Type: "ONEXIT",
+        Description: "onExit",
+        NoInputs: 0,
+        NoOutputs: 1,
+        IsActive: true
+      }
     ]
   },
   {
@@ -26,9 +35,25 @@ export const workflowLibraries: IWorkflowSection[] = [
     Operations: [
       {
         Id: 1,
-        Name: "Step",
+        Name: "step",
         Type: "STEP",
         Description: "Step node",
+        NoInputs: 1,
+        NoOutputs: 1,
+        IsActive: true
+      }
+    ]
+  },
+  {
+    Id: 1,
+    Name: NodeGroupType.Templates,
+    Description: "Templates",
+    Operations: [
+      {
+        Id: 2,
+        Name: "template",
+        Type: "TEMPLATE",
+        Description: "Template node",
         NoInputs: 1,
         NoOutputs: 1,
         IsActive: true

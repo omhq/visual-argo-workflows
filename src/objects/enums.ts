@@ -1,4 +1,5 @@
 export enum NodeGroupType {
   Sources = "sources",
-  Steps = "steps"
+  Steps = "steps",
+  Templates = "templates"
 }

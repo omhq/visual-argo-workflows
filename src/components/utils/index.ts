@@ -1,7 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import {
-  Connection
-} from "@jsplumb/community";
+import { Connection } from "@jsplumb/core";
 import {
   Dictionary,
   flattenDeep,
@@ -27,6 +25,12 @@ interface IConf {
   type: string;
   container?: IContainer;
   resource?: IResourceTemplate
+}
+
+interface IStepConf {
+  prettyName: string;
+  name:  string;
+  template: string;
 }
 
 export function ensure<T>(argument: T | undefined | null, message: string = 'This value was promised to be there.'): T {
@@ -166,12 +170,12 @@ export const getClientNodesAndConnections = (
     return [{}, []];
   }
 
+  let connections: Array<[string, string]> = [];
   let libraries = flattenLibraries(sections);
   let clientItems = nodeItems.map((x) => {
     return getClientNodeItem(x, ensure(libraries.find((l) => l.Type === x.type)));
   });
 
-  let connections: Array<[string, string]> = [];
   clientItems.forEach((x) => {
     let item = nodeItems.find((n) => n.key === x.key);
     if (item) {
@@ -195,15 +199,23 @@ export const initialValues = (): IConf => {
     prettyName: "Unnamed",
     name: "unnamed",
     description: "",
-    type: "container",
+    type: "",
     container: {
-      name: "whalesay",
-      image: "docker/whalesay",
-      imagePullPolicy: "always"
+      name: "",
+      image: "",
+      imagePullPolicy: ""
     },
     resource: {
-      action: "create",
+      action: "",
       manifest: ""
     }
+  }
+}
+
+export const stepInitialValues = (): IStepConf => {
+  return {
+    prettyName: "Unnamed",
+    name: "unnamed",
+    template: ""
   }
 }

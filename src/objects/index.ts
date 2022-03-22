@@ -1,4 +1,4 @@
-import { AnchorId } from "@jsplumb/community";
+import { AnchorId } from "@jsplumb/common";
 
 export interface IAnchor {
   id: string;

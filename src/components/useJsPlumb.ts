@@ -1,11 +1,10 @@
-import * as React from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Connection } from "@jsplumb/core";
+import { AnchorId } from "@jsplumb/common";
 import {
-  Connection,
-  Endpoint,
-  AnchorId,
   BrowserJsPlumbInstance,
   newInstance
-} from "@jsplumb/community";
+} from "@jsplumb/browser-ui";
 import {
   defaultOptions,
   inputAnchors,
@@ -13,8 +12,8 @@ import {
   sourceEndpoint,
   targetEndpoint
 } from "./options";
-import { getConnections, ensure } from "./utils";
-import { IClientNodeItem, IGraphData } from "../objects/designer";
+import { getConnections } from "./utils";
+import { IClientNodeItem } from "../objects/designer";
 import { Dictionary, isEqual } from "lodash";
 import { IAnchor } from "../objects/index";
 
@@ -26,36 +25,42 @@ export const useJsPlumb = (
 ): [(containerElement: HTMLDivElement) => void,
   (zoom: number) => void,
   (node: IClientNodeItem) => void] => {
-  const containerRef = React.useRef<HTMLDivElement>();
-  const [instance, setInstance] = React.useState<BrowserJsPlumbInstance>(null as any);
-  const stateRef = React.useRef<Dictionary<IClientNodeItem>>();
+  const [instance, setInstance] = useState<BrowserJsPlumbInstance>(null as any);
+  const containerRef = useRef<HTMLDivElement>();
+  const stateRef = useRef<Dictionary<IClientNodeItem>>();
   stateRef.current = nodes;
-  const containerCallbackRef = React.useCallback(
-    (containerElement: HTMLDivElement) => { containerRef.current = containerElement; }, []
-  );
+  const containerCallbackRef = useCallback((containerElement: HTMLDivElement) => {
+    containerRef.current = containerElement;
+  }, []);
 
-  const addEndpoints = React.useCallback(
-    (toId: string, sourceAnchors: IAnchor[], targetAnchors: IAnchor[], maxConnections: number) => {
+  const addEndpoints = useCallback((
+    el: Element,
+    sourceAnchors: IAnchor[],
+    targetAnchors: IAnchor[],
+    maxConnections: number
+  ) => {
     sourceAnchors.forEach((x) => {
       let endpoint = sourceEndpoint;
       endpoint.maxConnections = maxConnections;
-      instance.addEndpoint(toId, endpoint, {
+
+      instance.addEndpoint(el, endpoint, {
         anchor: x.position,
         uuid: x.id
-      });
+      })
     });
 
     targetAnchors.forEach((x) => {
       let endpoint = targetEndpoint;
       endpoint.maxConnections = maxConnections;
-      instance.addEndpoint(toId, endpoint, {
+
+      instance.addEndpoint(el, endpoint, {
         anchor: x.position,
         uuid: x.id
       });
     });
   }, [instance]);
 
-  const removeEndpoint = React.useCallback((node) => {
+  const removeEndpoint = useCallback((node) => {
     const nodeConnections = instance.getConnections({ target: node.key });
 
     if (nodeConnections) {
@@ -64,7 +69,7 @@ export const useJsPlumb = (
       });
     };
 
-    instance.removeAllEndpoints(node.key);
+    instance.removeAllEndpoints(document.getElementById(node.key) as Element);
   }, [instance]);
 
   const getAnchors = (port: string[], anchorIds: AnchorId[]): IAnchor[] => {
@@ -74,19 +79,53 @@ export const useJsPlumb = (
         position: anchorIds[port.length === 1 ? 2 : index]
       })
     );
+  };
+
+  const onbeforeDropIntercept = (instance: BrowserJsPlumbInstance, connection: Connection) => {
+    // prevent duplicate connections from the same source to target
+    const existingConnections = instance.select({ source: connection.sourceId as any, target: connection.targetId as any });
+    if (existingConnections.length > 0) {
+      return false;
+    }
+
+    // prevent looping connections between a target and source
+    const loopCheck = instance.select({ source: connection.targetId as any, target: connection.sourceId as any });
+    if (loopCheck.length > 0) {
+      return false;
+    }
+
+    // prevent a connection from a target to itself
+    if (connection.sourceId === connection.targetId) {
+      return false;
+    }
+
+    return true;
   }
 
-  React.useEffect(() => {
+  const onConnectionDetached = (instance: BrowserJsPlumbInstance) => {
+    onGraphUpdate({
+      'nodes': stateRef.current,
+      'currentConnections': getConnections(instance.getConnections({}, true) as Connection[])
+    });
+  }
+
+  const setZoom = useCallback((zoom: number) => {
+    if (instance) {
+      instance.setZoom(zoom);
+    }
+  }, [instance]);
+
+  useEffect(() => {
     if (!instance) return;
 
     if (nodes) {
       Object.values(nodes).forEach((x) => {
-        if (!instance.selectEndpoints({ element: x.key }).length) {
-          // single connections only on start or step nodes
-          const maxConnections = ['START', 'STEP'].includes(x.type) ? 1 : -1;
+        if (!instance.selectEndpoints({ element: x.key as any }).length) {
+          const maxConnections = ['ENTRYPOINT', 'ONEXIT'].includes(x.type) ? 1 : -1;
+          const el = document.getElementById(x.key) as Element;
 
           addEndpoints(
-            x.key,
+            el,
             getAnchors(x.outputs, outputAnchors),
             getAnchors(x.inputs, inputAnchors),
             maxConnections
@@ -96,45 +135,15 @@ export const useJsPlumb = (
 
       onGraphUpdate({
         'nodes': nodes,
-        'connections': getConnections(instance.getAllConnections())
+        'connections': getConnections(instance.getConnections({}, true) as Connection[])
       });
     }
-  }, [nodes, instance]);
+  }, [nodes, instance, addEndpoints, onGraphUpdate]);
 
-  const onConnection = (instance: BrowserJsPlumbInstance, info: any) => {
-    const connection: Connection = info.connection;
-    const existingConnections = instance.select({ source: connection.sourceId, target: connection.targetId });
-    const targetEndpint: Endpoint = ensure(connection.endpoints.find(e => e.isTarget));
-    
-    if (existingConnections.length > 1) {
-      instance.deleteConnection(connection);
-    }
-
-    if (connection.sourceId === connection.targetId) {
-      instance.deleteConnection(connection);
-    }
-
-    if (targetEndpint.connections.length > 1) {
-      instance.deleteConnection(connection);
-    }
-
-    onGraphUpdate({
-      'nodes': stateRef.current,
-      'connections': getConnections(instance.getAllConnections())
-    });
-  }
-
-  const onConnectionDetached = (instance: BrowserJsPlumbInstance) => {
-    onGraphUpdate({
-      'nodes': stateRef.current,
-      'currentConnections': getConnections(instance.getAllConnections())
-    });
-  }
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!instance) return;
 
-    let exisitngConnectionUuids = (instance.getConnections() as Connection[]).map(
+    let exisitngConnectionUuids = (instance.getConnections({}, true) as Connection[]).map(
       (x) => x.getUuids()
     );
 
@@ -146,36 +155,35 @@ export const useJsPlumb = (
     });
   }, [connections, nodes, instance]);
 
-  const setZoom = React.useCallback(
-    (zoom: number) => {
-      if (instance) {
-        instance.setZoom(zoom);
-      }
-    },
-    [instance]
-  );
-
-  React.useEffect(() => {
+  useEffect(() => {
     let jsPlumbInstance: BrowserJsPlumbInstance = newInstance({
       ...defaultOptions,
       container: containerRef.current
     });
 
-    jsPlumbInstance.bind("connection", function(this: BrowserJsPlumbInstance, info: any) {
-      onConnection(this, info);
+    jsPlumbInstance.bind("beforeDrop", function(connection: Connection) {
+      return onbeforeDropIntercept(jsPlumbInstance, connection);
     });
+
+    jsPlumbInstance.bind("connection", function(this: BrowserJsPlumbInstance, info: any) {
+      onGraphUpdate({
+        'nodes': stateRef.current,
+        'connections': getConnections(this.getConnections({}, true) as Connection[])
+      });
+    });
+
     jsPlumbInstance.bind("connectionDetached", function(this: BrowserJsPlumbInstance) {
       onConnectionDetached(this);
     });
 
-    jsPlumbInstance.bind('drag:move', function(info: any) {
+    jsPlumbInstance.bind("drag:move", function(info: any) {
       const parentRect = jsPlumbInstance.getContainer().getBoundingClientRect()
       const childRect = info.el.getBoundingClientRect()
       if (childRect.right > parentRect.right) info.el.style.left = `${parentRect.width - childRect.width}px`
       if (childRect.left < parentRect.left) info.el.style.left = '0px'
       if (childRect.top < parentRect.top) info.el.style.top = '0px'
       if (childRect.bottom > parentRect.bottom) info.el.style.top = `${parentRect.height - childRect.height}px`
-    })
+    });
 
     setInstance(jsPlumbInstance);
 

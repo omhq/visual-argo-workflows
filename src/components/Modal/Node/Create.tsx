@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import { useFormik } from "formik";
 import { XIcon } from "@heroicons/react/outline";
 import General from "./General";
@@ -14,14 +14,14 @@ interface IModalProps {
 
 const ModalCreate = (props: IModalProps) => {
   const { onHide, onAddEndpoint } = props;
-  const [openTab, setOpenTab] = React.useState("General");
+  const [openTab, setOpenTab] = useState("General");
   const formik = useFormik({
     initialValues: {
       configuration: {
         ...initialValues(),
       },
-      key: "step",
-      type: "STEP",
+      key: "template",
+      type: "TEMPLATE",
       inputs: ["op_source"],
       outputs: [],
       config: {}

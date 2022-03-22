@@ -1,5 +1,5 @@
+import { FC, useState, useCallback, useEffect, createRef } from "react";
 import { Dictionary, values } from "lodash";
-import * as React from "react";
 import { v4 as uuidv4 } from "uuid";
 import { EditorView } from "@codemirror/view";
 import { HighlightStyle, tags as t } from "@codemirror/highlight";
@@ -8,9 +8,11 @@ import CodeMirror from "@uiw/react-codemirror";
 import { StreamLanguage } from "@codemirror/stream-parser";
 import { yaml } from "@codemirror/legacy-modes/mode/yaml";
 import { json } from "@codemirror/lang-json";
-import { PlayIcon, CogIcon, PencilIcon } from "@heroicons/react/solid";
+import { PlayIcon, TemplateIcon, PencilIcon, BeakerIcon, LogoutIcon } from "@heroicons/react/outline";
 import { nodeCreated, nodeDeleted, nodeUpdated } from "../reducers";
 import Remove from "./Remove";
+import ModalStepCreate from "./Modal/Step/Create";
+import ModalStepEdit from "./Modal/Step/Edit";
 import ModalCreate from "./Modal/Node/Create";
 import ModalEdit from "./Modal/Node/Edit";
 import { useClickOutside } from "./clickOutside";
@@ -191,23 +193,28 @@ export const oneDarkHighlightStyle = HighlightStyle.define([
 
 // Extension to enable the One Dark theme (both the editor theme and the highlight style).
 export const oneDark: Extension = [oneDarkTheme, oneDarkHighlightStyle];
-export const WorkflowCanvas: React.FC<IWorkflowCanvasProps> = (props) => {
-  const { dispatch, nodes, connections, translateY, translateX } = props;
-  const [scale, setScale] = React.useState(1);
-  const [generatedCode, setGeneratedCode] = React.useState<string>("");
-  const [instanceNodes, setInstanceNodes] = React.useState(nodes);
-  const [copyText, setCopyText] = React.useState("Copy");
-  const [selectedNode, setSelectedNode] = React.useState<IClientNodeItem | null>(null);
-  const [showModalCreate, setShowModalCreate] = React.useState(false);
-  const [showModalEdit, setShowModalEdit] = React.useState(false);
+export const WorkflowCanvas: FC<IWorkflowCanvasProps> = (props) => {
+  const { dispatch, nodes, connections } = props;
+  const [scale, setScale] = useState(1);
+  const [generatedCode, setGeneratedCode] = useState<string>("");
+  const [instanceNodes, setInstanceNodes] = useState(nodes);
+  const [copyText, setCopyText] = useState("Copy");
+  const [selectedNode, setSelectedNode] = useState<IClientNodeItem | null>(null);
+  const [showModalCreateStep, setShowModalCreateStep] = useState(false);
+  const [showModalEditStep, setShowModalEditStep] = useState(false);
+  const [showModalCreate, setShowModalCreate] = useState(false);
+  const [showModalEdit, setShowModalEdit] = useState(false);
   const [containerCallbackRef, setZoom, removeEndpoint] = useJsPlumb(
     instanceNodes,
     connections,
     ((graphData: IGraphData) => onGraphUpdate(graphData))
   );
-  const drop = React.createRef<HTMLDivElement>();
+  const drop = createRef<HTMLDivElement>();
 
-  useClickOutside(drop, () => setShowModalCreate(false));
+  useClickOutside(drop, () => {
+    setShowModalCreateStep(false);
+    setShowModalCreate(false);
+  });
 
   const zoomIn = () => {
     setScale((scale) => scale + 0.1);
@@ -229,7 +236,7 @@ export const WorkflowCanvas: React.FC<IWorkflowCanvasProps> = (props) => {
   const onAddEndpoint = (values: any) => {
     let sections = flattenLibraries(workflowLibraries);
     let clientNodeItem = getClientNodeItem(values, ensure(sections.find((l) => l.Type === values.type)));
-    clientNodeItem.position = { left: 60, top: 20 };
+    clientNodeItem.position = { left: 60, top: 30 };
     dispatch(nodeCreated(clientNodeItem));
   }
 
@@ -243,21 +250,38 @@ export const WorkflowCanvas: React.FC<IWorkflowCanvasProps> = (props) => {
     dispatch(nodeDeleted(nodeToRemove));
   }
 
-  const onGraphUpdate = React.useCallback((graphData: any) => {
+  const onGraphUpdate = useCallback((graphData: any) => {
     const generatedTemplate = generateWorkflowTemplate(graphData);
     setGeneratedCode(JSON.stringify(generatedTemplate, null, " "));
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setInstanceNodes(nodes);
   }, [nodes]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setZoom(scale);
   }, [scale, setZoom]);
 
   return (
     <>
+      {showModalCreateStep
+        ? <ModalStepCreate
+          onHide={() => setShowModalCreateStep(false)}
+          onAddEndpoint={(values: any) => onAddEndpoint(values)}
+        />
+        : null
+      }
+
+      {showModalEditStep
+        ? <ModalStepEdit
+          node={selectedNode}
+          onHide={() => setShowModalEditStep(false)}
+          onUpdateEndpoint={(values: any) => onUpdateEndpoint(values)}
+        />
+        : null
+      }
+
       {showModalCreate
         ? <ModalCreate
           onHide={() => setShowModalCreate(false)}
@@ -283,7 +307,8 @@ export const WorkflowCanvas: React.FC<IWorkflowCanvasProps> = (props) => {
                 <div className="flex space-x-2 p-2">
                   <button className="hidden btn-util" type="button" onClick={zoomOut} disabled={scale <= 0.5}>-</button>
                   <button className="hidden btn-util" type="button" onClick={zoomIn} disabled={scale >= 1}>+</button>
-                  <button className="btn-util" type="button" onClick={() => setShowModalCreate(true)}>Add Node</button>
+                  <button className="btn-util" type="button" onClick={() => setShowModalCreateStep(true)}>Add Step</button>
+                  <button className="btn-util" type="button" onClick={() => setShowModalCreate(true)}>Add Template</button>
                 </div>
               </div>
 
@@ -291,7 +316,6 @@ export const WorkflowCanvas: React.FC<IWorkflowCanvasProps> = (props) => {
                 id={CANVAS_ID}
                 ref={containerCallbackRef}
                 className="canvas h-96 md:h-full w-full"
-                style={{ transform: `translate(${translateY}px,${translateX}px) scale(${scale})`, transformOrigin: `0 -${translateX}px` }}
               >
                 {values(instanceNodes).map((x) => (
                   <div
@@ -300,24 +324,42 @@ export const WorkflowCanvas: React.FC<IWorkflowCanvasProps> = (props) => {
                     id={x.key}
                     style={{ top: x.position.top, left: x.position.left }}
                   >
-                    {x.type === "START" &&
-                      <PlayIcon className="w-6 text-green-600" />
+                    {x.type === "ENTRYPOINT" &&
+                      <PlayIcon className="w-5 text-blue-400" />
+                    }
+
+                    {x.type === "ONEXIT" &&
+                      <LogoutIcon className="w-5 text-blue-500" />
                     }
 
                     {x.type === "STEP" &&
-                      <CogIcon className="w-6 text-orange-500" />
+                      <BeakerIcon className="w-4 text-blue-500" />
                     }
-                    {!(x.key).startsWith("source") &&
-                      <>
-                        <Remove id={x.key} onClose={onRemoveEndpoint} />
 
-                        <button onClick={() => {
-                          setSelectedNode(x);
-                          setShowModalEdit(true);
-                        }} className="absolute -top-4 right-0">
-                          <PencilIcon className="w-3.5 text-gray-500" />
-                        </button>
-                      </>
+                    {x.type === "TEMPLATE" &&
+                      <TemplateIcon className="w-4 text-blue-500" />
+                    }
+
+                    {!(x.key).startsWith("source") &&
+                      <Remove id={x.key} onClose={onRemoveEndpoint} />
+                    }
+
+                    {(x.key).startsWith("step") &&
+                      <button onClick={() => {
+                        setSelectedNode(x);
+                        setShowModalEditStep(true);
+                      }} className="absolute -top-4 right-0">
+                        <PencilIcon className="w-3.5 text-gray-500" />
+                      </button>
+                    }
+
+                    {(x.key).startsWith("template") &&
+                      <button onClick={() => {
+                        setSelectedNode(x);
+                        setShowModalEdit(true);
+                      }} className="absolute -top-4 right-0">
+                        <PencilIcon className="w-3.5 text-gray-500" />
+                      </button>
                     }
                     <div className="node-label">{x.configuration.prettyName}</div>
                   </div>

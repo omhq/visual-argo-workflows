@@ -1,28 +1,8 @@
-import {
-  AnchorId,
-  BrowserJsPlumbDefaults,
-  EndpointOptions,
-  PaintStyle
-} from "@jsplumb/community";
+import { EndpointOptions } from "@jsplumb/core";
+import { BezierConnector } from "@jsplumb/connector-bezier";
+import { AnchorId, PaintStyle } from "@jsplumb/common";
+import { BrowserJsPlumbDefaults } from "@jsplumb/browser-ui";
 
-export const defaultOptions: BrowserJsPlumbDefaults = {
-  dragOptions: {
-    containment: "parent",
-    cursor: "move"
-  },
-  connectionOverlays: [
-    [
-      "Arrow",
-      {
-        location: 1,
-        visible: true,
-        width: 11,
-        length: 11,
-        id: "ARROW"
-      }
-    ]
-  ]
-}
 
 const connectorPaintStyle: PaintStyle = {
   strokeWidth: 2,
@@ -39,24 +19,29 @@ const endpointHoverStyle: PaintStyle = {
   stroke: "#216477"
 }
 
+export const defaultOptions: BrowserJsPlumbDefaults = {
+  dragOptions: {
+    cursor: "move"
+  }
+}
+
 export const sourceEndpoint: EndpointOptions = {
   endpoint: "Dot",
   paintStyle: {
     stroke: "#16A085",
-    fill: "transparent",
+    fill: "#16A085",
     strokeWidth: 1
   },
-  isSource: true,
-  connector: [
-    "Bezier",
-    {
+  source: true,
+  connector: {
+    type: BezierConnector.type,
+    options:{
       curviness: 50
     }
-  ],
+  },
   connectorStyle: connectorPaintStyle,
   hoverPaintStyle: endpointHoverStyle,
   connectorHoverStyle: connectorHoverStyle,
-  dragOptions: {},
   maxConnections: -1
 }
 
@@ -67,8 +52,7 @@ export const targetEndpoint: EndpointOptions = {
   },
   hoverPaintStyle: endpointHoverStyle,
   maxConnections: -1,
-  dropOptions: { hoverClass: "hover", activeClass: "active" },
-  isTarget: true
+  target: true
 }
 
 export const inputAnchors: AnchorId[] = ["TopLeft", "BottomLeft", "Left"];

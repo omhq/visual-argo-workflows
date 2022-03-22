@@ -49,6 +49,7 @@ const General = (props: any) => {
               value={formik.values.configuration.type}
               onChange={formik.handleChange}
             >
+              <option value="">Select type</option>
               <option value="container">Container</option>
               <option value="resource">Resource</option>
             </select>

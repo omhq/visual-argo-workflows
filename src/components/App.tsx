@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useReducer, useEffect } from "react";
 import { reducer, initialState, nodes, connections } from "../reducers";
 import { WorkflowCanvas } from "./canvas";
 import { getClientNodesAndConnections, parseConfiguration } from "./utils/index";
@@ -9,7 +9,7 @@ import "./App.css";
 
 
 export default function App() {
-  const [state, dispatch] = React.useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, initialState);
   let serviceNodeItems = parseConfiguration(StartConfigString);
   let [serviceNodeItemsWithPosition, translateY, translateX] = getNodesPositions(
     serviceNodeItems
@@ -20,7 +20,7 @@ export default function App() {
     document.documentElement.style.setProperty('--vh', `${vh}px`);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     window.addEventListener("resize", () => {
       setViewHeight();
     });
@@ -28,7 +28,7 @@ export default function App() {
     setViewHeight();
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let [clientNodeItems, clientConnectionItems] = getClientNodesAndConnections(
       serviceNodeItemsWithPosition,
       workflowLibraries

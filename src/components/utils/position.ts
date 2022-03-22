@@ -8,7 +8,7 @@ interface INodeItemWithParent extends IServiceNodeItem {
   parent: string;
 }
 
-const nodeWidth = 200;
+const nodeWidth = 100;
 const nodeHeight = 100;
 
 export const getHierarchyTree = (
@@ -68,10 +68,9 @@ export const getNodesPositions = (
 
   descendants.forEach((x) => {
     if (x.data.key !== "root_parent") {
-      nodeWithPosition.push({ ...x.data, position: { left: x.y + 30, top: x.x + 30 } });
+      nodeWithPosition.push({ ...x.data, position: { left: x.y, top: x.x + nodeHeight } });
     }
   });
 
-  //return [nodeWithPosition, nodeWidth / 3, nodeHeight - x0];
   return [nodeWithPosition, 0, 0];
 }

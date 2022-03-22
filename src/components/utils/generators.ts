@@ -12,7 +12,7 @@ interface IFlatConnection {
 }
 
 const getFirstNode = (graphNodes: Dictionary<IClientNodeItem>): IClientNodeItem | null => {
-  return ensure(find(graphNodes, { type: "START" }));
+  return ensure(find(graphNodes, { type: "ENTRYPOINT" }));
 }
 
 const generateTemplateInvocator = (
@@ -71,7 +71,7 @@ const generateTemplateDefinitions = (
   for (const [, value] of Object.entries(graphNodes)) {
     const node = value as IClientNodeItem;
 
-    if (node["type"] !== "START") {
+    if (!['ENTRYPOINT', 'ONEXIT', 'STEP'].includes(node["type"])) {
       const template: ITemplate = {
         name: node.configuration.name
       };
@@ -140,6 +140,11 @@ export const generateWorkflowTemplate = (graphData: any): IWorkflow => {
     }
   };
 
+  // set templates
+  generateTemplateDefinitions(nodes).forEach((x) => {
+    base["spec"]["templates"].push(x)
+  });
+
   let firstNode: IClientNodeItem | null = (connections && Object.keys(connections).length) ? getFirstNode(nodes) : null;
 
   if (firstNode) {
@@ -156,9 +161,5 @@ export const generateWorkflowTemplate = (graphData: any): IWorkflow => {
     }
   }
 
-  // set templates
-  generateTemplateDefinitions(nodes).forEach((x) => {
-    base["spec"]["templates"].push(x)
-  });
   return base;
 }
