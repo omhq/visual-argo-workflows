@@ -3,7 +3,7 @@ import {
   IWorkflowStep,
   ITemplate,
   IWorkflow
-} from "../../objects/designer";
+} from "../types";
 import { Dictionary, find } from "lodash";
 import { ensure } from "./index";
 
@@ -19,36 +19,36 @@ const generateTemplateInvocator = (
   firstNode: IClientNodeItem,
   graphNodes: Dictionary<IClientNodeItem>,
   connections: Dictionary<IFlatConnection> | undefined): ITemplate => {
-    const ret: ITemplate = {
-      name: "",
-      steps: []
-    };
+  const ret: ITemplate = {
+    name: "",
+    steps: []
+  };
 
-    let currentNodeId: string = firstNode.key;
-    ret.name = firstNode.configuration.name;
+  let currentNodeId: string = firstNode.key;
+  ret.name = firstNode.configuration.name;
 
-    while (currentNodeId.length) {
-      if (!connections) {
-        break;
-      }
-
-      const currentConnection: any = connections[currentNodeId];
-      if (currentConnection) {
-        const nextNode: IClientNodeItem = graphNodes[currentConnection["target"]];
-        const nodeStepTemplate: IWorkflowStep = {
-          name: nextNode.configuration.name,
-          template: nextNode.configuration.name
-        };
-  
-        ret.steps!.push(nodeStepTemplate);
-        currentNodeId = currentConnection["target"];
-        continue;
-      }
-      
-      currentNodeId = "";
+  while (currentNodeId.length) {
+    if (!connections) {
+      break;
     }
-  
-    return ret;
+
+    const currentConnection: any = connections[currentNodeId];
+    if (currentConnection) {
+      const nextNode: IClientNodeItem = graphNodes[currentConnection["target"]];
+      const nodeStepTemplate: IWorkflowStep = {
+        name: nextNode.configuration.name,
+        template: nextNode.configuration.name
+      };
+
+      ret.steps!.push(nodeStepTemplate);
+      currentNodeId = currentConnection["target"];
+      continue;
+    }
+
+    currentNodeId = "";
+  }
+
+  return ret;
 }
 
 const getImageString = (container: any): string => {

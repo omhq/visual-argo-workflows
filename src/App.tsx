@@ -1,19 +1,17 @@
-import { useReducer, useEffect } from "react";
-import { reducer, initialState, nodes, connections } from "../reducers";
-import { WorkflowCanvas } from "./canvas";
-import { getClientNodesAndConnections, parseConfiguration } from "./utils/index";
-import { StartConfigString } from "../data/startConfig";
+import { useReducer, useEffect, useState } from "react";
+import { reducer, initialState, nodes, connections } from "./reducers";
+import { WorkflowCanvas } from "./components/canvas";
+import { getClientNodesAndConnections, parseConfiguration } from "./utils";
+import { StartConfigString } from "./utils/data/startConfig";
+import { workflowLibraries } from "./utils/data/libraries";
 import { getNodesPositions } from "./utils/position";
-import { workflowLibraries } from "../data/libraries";
 import "./App.css";
 
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  let serviceNodeItems = parseConfiguration(StartConfigString);
-  let [serviceNodeItemsWithPosition, translateY, translateX] = getNodesPositions(
-    serviceNodeItems
-  );
+  const [translateY, setTranslateY] = useState<number>(0);
+  const [translateX, setTranslateX] = useState<number>(0);
 
   const setViewHeight = () => {
     let vh = window.innerHeight * 0.01;
@@ -29,12 +27,20 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    let serviceNodeItems = parseConfiguration(StartConfigString);
+    let [serviceNodeItemsWithPosition, getTranslateY, getTranslateX] = getNodesPositions(
+      serviceNodeItems
+    );
+
     let [clientNodeItems, clientConnectionItems] = getClientNodesAndConnections(
       serviceNodeItemsWithPosition,
       workflowLibraries
     );
-    dispatch(nodes(clientNodeItems))
-    dispatch(connections(clientConnectionItems))
+
+    setTranslateY(getTranslateY);
+    setTranslateX(getTranslateX);
+    dispatch(nodes(clientNodeItems));
+    dispatch(connections(clientConnectionItems));
   }, []);
 
   return (

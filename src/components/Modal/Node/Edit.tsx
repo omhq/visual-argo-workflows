@@ -4,8 +4,8 @@ import { XIcon } from "@heroicons/react/outline";
 import General from "./General";
 import Container from "./Container";
 import Resource from "./Resource";
-import { initialValues, formatName } from "./../../utils";
-import { IClientNodeItem } from "../../../objects/designer";
+import { initialValues, formatName } from "./../../../utils";
+import { IClientNodeItem } from "../../../types";
 
 
 interface IModalProps {
@@ -30,7 +30,7 @@ const ModalEdit = (props: IModalProps) => {
   });
   const tabs = [
     { name: 'General', href: '#', current: true, hidden: false },
-    { name: 'Container', href: '#', current: false, hidden: (formik.values.configuration.type === 'container' ? false : true)},
+    { name: 'Container', href: '#', current: false, hidden: (formik.values.configuration.type === 'container' ? false : true) },
     { name: 'Resource', href: '#', current: false, hidden: (formik.values.configuration.type === 'resource' ? false : true) }
   ];
 
@@ -48,7 +48,7 @@ const ModalEdit = (props: IModalProps) => {
     formik.resetForm();
 
     if (selectedNode) {
-      formik.initialValues.configuration = {...selectedNode.configuration};
+      formik.initialValues.configuration = { ...selectedNode.configuration };
     }
   }, [selectedNode]);
 
@@ -59,14 +59,14 @@ const ModalEdit = (props: IModalProps) => {
   }, []);
 
   return (
-<>
+    <>
       <div className="fixed z-50 inset-0 overflow-y-auto">
         <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 outline-none focus:outline-none">
           <div onClick={onHide} className="opacity-25 fixed inset-0 z-40 bg-black"></div>
           <div className="relative w-auto my-6 mx-auto max-w-5xl z-50">
             <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
               <div className="flex items-center justify-between px-4 py-3 border-b border-solid border-blueGray-200 rounded-t">
-                <h3 className="text-sm font-semibold">Update node</h3>
+                <h3 className="text-sm font-semibold">Update template</h3>
                 <button
                   className="p-1 ml-auto text-black float-right outline-none focus:outline-none"
                   onClick={onHide}
@@ -122,7 +122,7 @@ const ModalEdit = (props: IModalProps) => {
                     </nav>
                   </div>
                 </div>
-              
+
                 <div className="relative px-4 py-3 flex-auto">
                   <form onSubmit={formik.handleSubmit}>
                     {openTab === "General" &&
@@ -145,7 +145,7 @@ const ModalEdit = (props: IModalProps) => {
                   className="btn-util"
                   type="button"
                   onClick={() => {
-                    let updated = {...selectedNode};
+                    let updated = { ...selectedNode };
                     formik.values.configuration.name = formatName(formik.values.configuration.prettyName);
                     updated.configuration = formik.values.configuration;
                     onUpdateEndpoint(updated);

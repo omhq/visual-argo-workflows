@@ -16,12 +16,12 @@ import {
   IWorkflowSection,
   IContainer,
   IResourceTemplate
-} from "../../objects/designer";
+} from "../types";
 
 interface IConf {
   prettyName: string;
-  name:  string;
-  description:  string;
+  name: string;
+  description: string;
   type: string;
   container?: IContainer;
   resource?: IResourceTemplate
@@ -29,7 +29,7 @@ interface IConf {
 
 interface IStepConf {
   prettyName: string;
-  name:  string;
+  name: string;
   template: string;
 }
 
@@ -48,7 +48,7 @@ export const parseSingleNode = (
   let configurationObj: any = null;
   try {
     configurationObj = JSON.parse(configurationStr);
-  } catch (err) {}
+  } catch (err) { }
 
   if (isPlainObject(configurationObj)) {
     node = configurationObj;
@@ -70,7 +70,7 @@ export const parseConfiguration = (
 
   try {
     configurationObj = JSON.parse(configurationStr);
-  } catch (err) {}
+  } catch (err) { }
 
   if (isPlainObject(configurationObj)) {
     nodes = flattenDeep(values(configurationObj));

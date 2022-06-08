@@ -4,7 +4,7 @@ import { XIcon } from "@heroicons/react/outline";
 import General from "./General";
 import Container from "./Container";
 import Resource from "./Resource";
-import { initialValues, formatName } from "./../../utils";
+import { initialValues, formatName } from "./../../../utils";
 
 
 interface IModalProps {
@@ -27,12 +27,12 @@ const ModalCreate = (props: IModalProps) => {
       config: {}
     },
     onSubmit: ((values, { setSubmitting }) => {
-      
+
     })
   });
   const tabs = [
     { name: 'General', href: '#', current: true, hidden: false },
-    { name: 'Container', href: '#', current: false, hidden: (formik.values.configuration.type === 'container' ? false : true)},
+    { name: 'Container', href: '#', current: false, hidden: (formik.values.configuration.type === 'container' ? false : true) },
     { name: 'Resource', href: '#', current: false, hidden: (formik.values.configuration.type === 'resource' ? false : true) }
   ];
 
@@ -48,7 +48,7 @@ const ModalCreate = (props: IModalProps) => {
           <div className="relative w-auto my-6 mx-auto max-w-5xl z-50">
             <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
               <div className="flex items-center justify-between px-4 py-3 border-b border-solid border-blueGray-200 rounded-t">
-                <h3 className="text-sm font-semibold">Add node</h3>
+                <h3 className="text-sm font-semibold">Add template</h3>
                 <button
                   className="p-1 ml-auto text-black float-right outline-none focus:outline-none"
                   onClick={onHide}
@@ -104,7 +104,7 @@ const ModalCreate = (props: IModalProps) => {
                     </nav>
                   </div>
                 </div>
-              
+
                 <div className="relative px-4 py-3 flex-auto">
                   <form onSubmit={formik.handleSubmit}>
                     {openTab === "General" &&

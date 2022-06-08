@@ -11,20 +11,19 @@ import {
   outputAnchors,
   sourceEndpoint,
   targetEndpoint
-} from "./options";
-import { getConnections } from "./utils";
-import { IClientNodeItem } from "../objects/designer";
+} from "../utils/options";
+import { getConnections } from "../utils";
+import { IClientNodeItem } from "../types";
 import { Dictionary, isEqual } from "lodash";
-import { IAnchor } from "../objects/index";
-
+import { IAnchor } from "../types";
 
 export const useJsPlumb = (
   nodes: Dictionary<IClientNodeItem>,
   connections: Array<[string, string]>,
   onGraphUpdate: Function
 ): [(containerElement: HTMLDivElement) => void,
-  (zoom: number) => void,
-  (node: IClientNodeItem) => void] => {
+    (zoom: number) => void,
+    (node: IClientNodeItem) => void] => {
   const [instance, setInstance] = useState<BrowserJsPlumbInstance>(null as any);
   const containerRef = useRef<HTMLDivElement>();
   const stateRef = useRef<Dictionary<IClientNodeItem>>();
@@ -124,12 +123,14 @@ export const useJsPlumb = (
           const maxConnections = ['ENTRYPOINT', 'ONEXIT'].includes(x.type) ? 1 : -1;
           const el = document.getElementById(x.key) as Element;
 
-          addEndpoints(
-            el,
-            getAnchors(x.outputs, outputAnchors),
-            getAnchors(x.inputs, inputAnchors),
-            maxConnections
-          );
+          if (el) {
+            addEndpoints(
+              el,
+              getAnchors(x.outputs, outputAnchors),
+              getAnchors(x.inputs, inputAnchors),
+              maxConnections
+            );
+          }
         };
       });
 
@@ -161,22 +162,22 @@ export const useJsPlumb = (
       container: containerRef.current
     });
 
-    jsPlumbInstance.bind("beforeDrop", function(connection: Connection) {
+    jsPlumbInstance.bind("beforeDrop", function (connection: Connection) {
       return onbeforeDropIntercept(jsPlumbInstance, connection);
     });
 
-    jsPlumbInstance.bind("connection", function(this: BrowserJsPlumbInstance, info: any) {
+    jsPlumbInstance.bind("connection", function (this: BrowserJsPlumbInstance, info: any) {
       onGraphUpdate({
         'nodes': stateRef.current,
         'connections': getConnections(this.getConnections({}, true) as Connection[])
       });
     });
 
-    jsPlumbInstance.bind("connectionDetached", function(this: BrowserJsPlumbInstance) {
+    jsPlumbInstance.bind("connectionDetached", function (this: BrowserJsPlumbInstance) {
       onConnectionDetached(this);
     });
 
-    jsPlumbInstance.bind("drag:move", function(info: any) {
+    jsPlumbInstance.bind("drag:move", function (info: any) {
       const parentRect = jsPlumbInstance.getContainer().getBoundingClientRect()
       const childRect = info.el.getBoundingClientRect()
       if (childRect.right > parentRect.right) info.el.style.left = `${parentRect.width - childRect.width}px`

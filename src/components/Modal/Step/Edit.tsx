@@ -1,7 +1,7 @@
 import React from "react";
 import { useFormik } from "formik";
 import { XIcon } from "@heroicons/react/outline";
-import { stepInitialValues, formatName } from "./../../utils";
+import { stepInitialValues, formatName } from "./../../../utils";
 
 
 interface IModalStepProps {
@@ -24,10 +24,6 @@ const ModalStepEdit = (props: IModalStepProps) => {
     })
   });
 
-  const classNames = (...classes: string[]) => {
-    return classes.filter(Boolean).join(' ');
-  }
-
   React.useEffect(() => {
     if (node) {
       setSelectedNode(node);
@@ -38,7 +34,7 @@ const ModalStepEdit = (props: IModalStepProps) => {
     formik.resetForm();
 
     if (selectedNode) {
-      formik.initialValues.configuration = {...selectedNode.configuration};
+      formik.initialValues.configuration = { ...selectedNode.configuration };
     }
   }, [selectedNode]);
 
@@ -56,7 +52,7 @@ const ModalStepEdit = (props: IModalStepProps) => {
           <div className="relative w-auto my-6 mx-auto max-w-5xl z-50">
             <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
               <div className="flex items-center justify-between px-4 py-3 border-b border-solid border-blueGray-200 rounded-t">
-                <h3 className="text-sm font-semibold">Update node</h3>
+                <h3 className="text-sm font-semibold">Update step</h3>
                 <button
                   className="p-1 ml-auto text-black float-right outline-none focus:outline-none"
                   onClick={onHide}
@@ -108,7 +104,7 @@ const ModalStepEdit = (props: IModalStepProps) => {
                   className="btn-util"
                   type="button"
                   onClick={() => {
-                    let updated = {...selectedNode};
+                    let updated = { ...selectedNode };
                     formik.values.configuration.name = formatName(formik.values.configuration.prettyName);
                     updated.configuration = formik.values.configuration;
                     onUpdateEndpoint(updated);

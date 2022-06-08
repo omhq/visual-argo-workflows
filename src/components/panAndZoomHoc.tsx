@@ -29,7 +29,7 @@ export interface PanAndZoomHOCProps {
     onBoxEnd?: (clientX1: number, clientY1: number, clientX2: number, clientY2: number, event: MouseEvent | TouchEvent) => void;
 }
 
-export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<P>): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
+export default function panAndZoom<P = any>(WrappedComponent: React.ComponentClass<{}, any>): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
     return class PanAndZoomHOC extends React.PureComponent<PanAndZoomHOCProps, never> {
         static propTypes = {
             x: PropTypes.number,
@@ -374,7 +374,7 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
 
             if (x !== undefined && y !== undefined && scale !== undefined) {
                 const passedProps = passOnProps ? { x: x + this.dx, y: y + this.dy, scale: scale + this.ds } : {};
-                return React.createElement(WrappedComponent, Object.assign({}, passedProps, other) as P);
+                return React.createElement(WrappedComponent, Object.assign({}, passedProps, other) as any);
             } else {
                 return null;
             }

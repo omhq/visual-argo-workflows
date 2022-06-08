@@ -1,5 +1,5 @@
-import { NodeGroupType } from "../objects/enums";
-import { IWorkflowSection } from "../objects/designer";
+import { NodeGroupType } from "../../types/enums";
+import { IWorkflowSection } from "../../types";
 
 
 export const workflowLibraries: IWorkflowSection[] = [

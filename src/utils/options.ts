@@ -35,7 +35,7 @@ export const sourceEndpoint: EndpointOptions = {
   source: true,
   connector: {
     type: BezierConnector.type,
-    options:{
+    options: {
       curviness: 50
     }
   },

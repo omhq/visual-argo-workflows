@@ -1,3 +1,4 @@
+import { AnchorId } from "@jsplumb/common";
 import { Dictionary } from "lodash";
 import { NodeGroupType } from "./enums";
 
@@ -102,4 +103,9 @@ export interface IGraphData {
 
 export interface IServiceNodeItem extends INodeItem {
   configuration: IBaseConfiguration;
+}
+
+export interface IAnchor {
+  id: string;
+  position: AnchorId;
 }

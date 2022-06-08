@@ -1,6 +1,4 @@
-import {
-  IServiceNodeItem,
-} from "../../objects/designer";
+import { IServiceNodeItem } from "../types";
 import * as d3 from "d3";
 import { getNodeKeyFromConnectionId } from "./index";
 
