@@ -16,8 +16,6 @@ import {
   EVENT_DRAG_START,
   EVENT_DRAG_STOP,
   EVENT_CONNECTION_DBL_CLICK,
-  EVENT_CONNECTION_CLICK,
-  EVENT_CONNECTION_MOUSEOVER,
   DragStartPayload,
   DragStopPayload
 } from "@jsplumb/browser-ui";

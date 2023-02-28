@@ -10,7 +10,12 @@ import {
   range,
   values
 } from "lodash";
-import { INodeItem, INodeLibraryItem, INodeGroup } from "../types";
+import {
+  INodeItem,
+  INodeLibraryItem,
+  INodeGroup,
+  FlatConnection
+} from "../types";
 import { ReactElement } from "react";
 
 export function ensure<T>(
@@ -111,13 +116,15 @@ export const getClientNodeItem = (
   };
 };
 
-export const getConnections = (
-  connections: Connection[]
-): Array<[string, string]> => {
-  const ret: Array<[string, string]> = [];
+export const getConnections = (connections: Connection[]): FlatConnection[] => {
+  const ret: FlatConnection[] = [];
 
   connections.forEach((connection: Connection) => {
-    ret.push([connection.sourceId, connection.targetId]);
+    const conn = {
+      source: connection.sourceId,
+      target: connection.targetId
+    };
+    ret.push(conn);
   });
 
   return ret;

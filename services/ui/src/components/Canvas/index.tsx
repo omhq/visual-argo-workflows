@@ -9,8 +9,7 @@ import {
   INodeItem
 } from "../../types";
 import { useJsPlumb } from "./useJsPlumb";
-import TemplateNode from "./WorkerNode";
-import OrderNode from "./OrderNode";
+import TemplateNode from "./TemplateNode";
 
 const CANVAS_ID: string = "canvas-container-" + uuidv4();
 
@@ -174,22 +173,10 @@ export const Canvas: FC<ICanvasProps> = (props) => {
             }}
           >
             {values(nodes).map((x) => {
-              if (x.type === "WORKER") {
+              if (x.type === "TEMPLATE") {
                 x = x as ITemplateNodeItem;
                 return (
                   <TemplateNode
-                    key={x.key}
-                    node={x}
-                    setTemplateToEdit={setTemplateToEdit}
-                    setNodeToDelete={setNodeToDelete}
-                  />
-                );
-              }
-
-              if (x.type === "ORDER") {
-                x = x as ITemplateNodeItem;
-                return (
-                  <OrderNode
                     key={x.key}
                     node={x}
                     setTemplateToEdit={setTemplateToEdit}

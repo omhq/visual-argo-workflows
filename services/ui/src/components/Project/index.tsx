@@ -1,14 +1,7 @@
-import * as React from "react";
 import { useState, useRef } from "react";
 import { Dictionary, omit } from "lodash";
-import Button from "@mui/material/Button";
 import { PlusIcon } from "@heroicons/react/20/solid";
-import {
-  ITemplateNodeItem,
-  INodeItem,
-  IClientNodePosition,
-  IGroupNodeItem
-} from "../../types";
+import { ITemplateNodeItem, INodeItem, IClientNodePosition } from "../../types";
 import eventBus from "../../events/eventBus";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { nodeLibraries } from "../../utils/data/libraries";
@@ -25,21 +18,12 @@ import ModalTemplateEdit from "../modals/template/Edit";
 import { useTitle } from "../../hooks";
 import CodeBox from "./CodeBox";
 import Header from "./Header";
-import Templates from "../Templates";
-
-type Anchor = "top" | "left" | "bottom" | "right";
 
 export default function Project() {
   const { height } = useWindowDimensions();
   const stateNodesRef = useRef<Dictionary<INodeItem>>();
   const stateConnectionsRef = useRef<[[string, string]] | []>();
   const [showModalCreateTemplate, setShowModalCreateTemplate] = useState(false);
-  const [drawerState, setDrawerState] = React.useState({
-    top: false,
-    left: false,
-    bottom: false,
-    right: false
-  });
   const [templateToEdit, setTemplateToEdit] =
     useState<ITemplateNodeItem | null>(null);
   const [nodeToDelete, setNodeToDelete] = useState<INodeItem | null>(null);
@@ -50,22 +34,6 @@ export default function Project() {
     left: 0,
     scale: 1
   });
-
-  const toggleDrawer = (anchor: Anchor, open: boolean) => {
-    console.log(anchor, open);
-    return (event: React.KeyboardEvent | React.MouseEvent) => {
-      console.log(event);
-      if (
-        event.type === "keydown" &&
-        ((event as React.KeyboardEvent).key === "Tab" ||
-          (event as React.KeyboardEvent).key === "Shift")
-      ) {
-        return;
-      }
-
-      setDrawerState({ ...drawerState, [anchor]: open });
-    };
-  };
 
   useTitle(["New workflow", ""].join(" | "));
 
@@ -94,42 +62,24 @@ export default function Project() {
   };
 
   const onAddEndpoint = (values: any) => {
-    console.log(values);
     const sections = flattenLibraries(nodeLibraries);
     const clientNodeItem = getClientNodeItem(
       values,
       ensure(sections.find((l) => l.type === values.type))
     );
+
     clientNodeItem.position = {
       left: 60 - canvasPosition.left,
       top: 30 - canvasPosition.top
     };
+
     setNodes({ ...nodes, [clientNodeItem.key]: clientNodeItem });
 
-    console.log(nodes);
-
-    if (clientNodeItem.type === "WORKER") {
+    if (clientNodeItem.type === "TEMPLATE") {
       setTemplateToEdit(clientNodeItem as ITemplateNodeItem);
     }
 
     setShowModalCreateTemplate(false);
-  };
-
-  const addControl = (type: string) => {
-    if (type === "group") {
-      const base: IGroupNodeItem = {
-        key: "group",
-        position: { left: 0, top: 0 },
-        inputs: ["op_source"],
-        outputs: [],
-        type: "GROUP",
-        nodeConfig: {
-          order: 1
-        }
-      };
-
-      onAddEndpoint(base);
-    }
   };
 
   const onUpdateEndpoint = (nodeItem: ITemplateNodeItem) => {
@@ -220,30 +170,7 @@ export default function Project() {
                     onClick={() => setShowModalCreateTemplate(true)}
                   >
                     <PlusIcon className="w-4" />
-                    <span>Task</span>
-                  </button>
-
-                  <button
-                    className="flex space-x-1 btn-util"
-                    type="button"
-                    onClick={() => setShowModalCreateTemplate(true)}
-                  >
-                    <PlusIcon className="w-4" />
-                    <span>Step</span>
-                  </button>
-
-                  <Button
-                    className="flex space-x-1 btn-util"
-                    onClick={toggleDrawer("right", true)}
-                  >
-                    templates
-                  </Button>
-                  <button
-                    className="flex space-x-1 btn-util"
-                    type="button"
-                    onClick={() => toggleDrawer("right", true)}
-                  >
-                    <span>Templates</span>
+                    <span>Template</span>
                   </button>
                 </div>
               </div>
@@ -276,8 +203,6 @@ export default function Project() {
           </div>
         </div>
       </div>
-
-      <Templates />
     </div>
   );
 }

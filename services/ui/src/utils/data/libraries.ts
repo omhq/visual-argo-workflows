@@ -8,38 +8,8 @@ export const nodeLibraries: INodeGroup[] = [
     nodeTypes: [
       {
         id: 1,
-        name: "dag",
-        type: "DAG",
-        noInputs: 1,
-        noOutputs: 1,
-        isActive: true
-      },
-      {
-        id: 2,
-        name: "task",
-        type: "TASK",
-        noInputs: 1,
-        noOutputs: 1,
-        isActive: true
-      }
-    ]
-  },
-  {
-    id: 2,
-    name: NodeGroupType.Steps,
-    nodeTypes: [
-      {
-        id: 1,
-        name: "steps",
-        type: "STEPS",
-        noInputs: 1,
-        noOutputs: 1,
-        isActive: true
-      },
-      {
-        id: 2,
-        name: "step",
-        type: "STEP",
+        name: "template",
+        type: "TEMPLATE",
         noInputs: 1,
         noOutputs: 1,
         isActive: true

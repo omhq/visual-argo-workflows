@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { QueueListIcon } from "@heroicons/react/24/solid";
+import { truncateStr } from "../../utils";
 import { ITemplateNodeItem, CallbackFunction } from "../../types";
 import eventBus from "../../events/eventBus";
 import { Popover } from "./Popover";
+import NodeIcon from "./NodeIcon";
 
 interface INodeProps {
   node: ITemplateNodeItem;
@@ -10,7 +11,7 @@ interface INodeProps {
   setNodeToDelete: CallableFunction;
 }
 
-export default function OrderNode(props: INodeProps) {
+export default function TemplateNode(props: INodeProps) {
   const { node, setTemplateToEdit, setNodeToDelete } = props;
   const [nodeDragging, setNodeDragging] = useState<string | null>();
   const [nodeHovering, setNodeHovering] = useState<string | null>();
@@ -33,7 +34,7 @@ export default function OrderNode(props: INodeProps) {
   return (
     <div
       key={node.key}
-      className={"node-item-round cursor-pointer shadow flex flex-col group"}
+      className={"node-item cursor-pointer shadow flex flex-col group"}
       id={node.key}
       style={{ top: node.position.top, left: node.position.left }}
       onMouseEnter={() => setNodeHovering(node.key)}
@@ -53,8 +54,16 @@ export default function OrderNode(props: INodeProps) {
           }}
         ></Popover>
       )}
-      <div className="flex items-center justify-center h-full text-gray-500">
-        <QueueListIcon className="w-4" />
+      <div className="relative node-label w-full py-2 px-4">
+        <>
+          {node.nodeConfig.template.name && (
+            <div className="text-sm font-semibold overflow-x-hidden">
+              {truncateStr(node.nodeConfig.template.name, 12)}
+            </div>
+          )}
+
+          <NodeIcon nodeType={node.type} />
+        </>
       </div>
     </div>
   );

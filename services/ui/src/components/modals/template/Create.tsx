@@ -50,7 +50,7 @@ const ModalCreate = (props: IModalProps) => {
                 {(formik) => (
                   <>
                     <div className="flex items-center justify-between px-4 py-3 border-b border-solid border-blueGray-200 rounded-t">
-                      <h3 className="text-sm font-semibold">New worker</h3>
+                      <h3 className="text-sm font-semibold">New template</h3>
                       <button
                         className="p-1 ml-auto text-black float-right outline-none focus:outline-none"
                         onClick={onHide}

@@ -5,9 +5,10 @@ import { Toaster } from "react-hot-toast";
 import SideBar from "./components/global/SideBar";
 import Project from "./components/Project";
 
-import "./index.css";
 import { lightTheme } from "./utils/theme";
 import { ThemeProvider } from "@mui/material";
+
+import "./index.css";
 
 export default function App() {
   const setViewHeight = () => {

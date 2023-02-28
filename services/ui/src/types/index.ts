@@ -5,6 +5,11 @@ import { NodeGroupType } from "./enums";
 
 export type CallbackFunction = (...args: any[]) => any;
 
+export type FlatConnection = {
+  source: string;
+  target: string;
+};
+
 export interface IClientNodePosition {
   key: string;
   position: {
@@ -45,13 +50,13 @@ export interface ITemplateNodeItem extends INodeItem {
       type: string;
     };
     template: Partial<ITemplate>;
-  }
+  };
 }
 
 export interface IGroupNodeItem extends INodeItem {
   nodeConfig: {
     order: any;
-  }
+  };
 }
 
 export interface IGraphData {
@@ -113,8 +118,8 @@ export interface IEditTemplateForm {
       };
       steps?: Steps<Step>;
       dag?: {
-        tasks: Task[]
-      }
+        tasks: Task[];
+      };
     };
   };
 }

@@ -204,11 +204,11 @@ export const getFinalValues = (
   const { nodeConfig } = values;
 
   const base: ITemplateNodeItem = {
-    key: previous?.key ?? "worker",
+    key: previous?.key ?? "template",
     position: previous?.position ?? { left: 0, top: 0 },
     inputs: previous?.inputs ?? ["op_source"],
     outputs: previous?.outputs ?? [],
-    type: "WORKER",
+    type: "TEMPLATE",
     nodeConfig: {
       metaData: {
         type: nodeConfig.metaData.type

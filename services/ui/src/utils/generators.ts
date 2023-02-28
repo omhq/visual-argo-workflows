@@ -1,68 +1,89 @@
 import {
   ITemplateNodeItem,
-  IWorkflowStep,
   ITemplate,
   IWorkflow,
-  INodeItem
+  INodeItem,
+  FlatConnection
 } from "../types";
 import { Dictionary } from "lodash";
 
-interface IFlatConnection {
-  target: string;
-}
-
 const getFirstNode = (
-  graphNodes: Dictionary<INodeItem>,
-  connections: any
+  nodes: Dictionary<INodeItem>,
+  connections: FlatConnection[]
 ): ITemplateNodeItem => {
-  const nodes = { ...graphNodes };
-  const workers = Object.keys(nodes).reduce((obj, key) => {
-    if (nodes[key].type === "WORKER") {
-      obj[key] = nodes[key];
-    }
-    return obj;
-  }, {} as Dictionary<INodeItem>);
+  const _nodes = { ...nodes };
 
-  if (connections.length) {
-    connections.forEach((connection: any) => {
-      delete workers[connection[1]];
+  for (const nodeKey in _nodes) {
+    const isTarget = connections.find((conn) => {
+      if (nodeKey === conn.target) {
+        return nodeKey;
+      }
     });
+
+    if (isTarget) {
+      continue;
+    }
+
+    if (!isTarget) {
+      return _nodes[nodeKey];
+    }
   }
 
-  return Object.values(workers)[0];
+  return _nodes[0];
 };
 
-const generateTemplateInvocator = (
+const generateStepTemplate = (node: ITemplateNodeItem): any => {
+  return {
+    name: node.nodeConfig.template.name || "Untitiled",
+    template: node.nodeConfig.template.name || "Untitiled"
+  };
+};
+
+const generateStepsTemplate = (
   firstNode: ITemplateNodeItem,
-  graphNodes: Dictionary<ITemplateNodeItem>,
-  connections: Dictionary<IFlatConnection> | undefined
-): ITemplate => {
-  const ret: ITemplate = {
+  nodes: Dictionary<ITemplateNodeItem>,
+  connections: FlatConnection[]
+): any => {
+  const ret: any = {
     name: "",
     steps: []
   };
 
   let currentNodeId: string = firstNode.key;
-  ret.name = firstNode.nodeConfig.template.name || "Untitiled";
+  ret.name = `steps-from-${firstNode.nodeConfig.template.name}` || "Untitiled";
 
-  while (currentNodeId.length) {
-    if (!connections) {
-      break;
+  while (currentNodeId) {
+    const currentConnections: any = connections.filter((conn) => {
+      if (conn.source === currentNodeId) {
+        return conn;
+      }
+    });
+
+    if (currentConnections) {
+      console.log(currentConnections);
     }
 
-    const currentConnection: any = connections[currentNodeId];
-    if (currentConnection) {
-      const nextNode: ITemplateNodeItem =
-        graphNodes[currentConnection["target"]];
-      const nodeStepTemplate: IWorkflowStep = {
-        name: nextNode.nodeConfig.template.name || "Untitiled",
-        template: nextNode.nodeConfig.template.name || "Untitiled"
-      };
+    /*
+    if (currentConnections) {
+      for (const currentConnection of currentConnections) {
+        const node: ITemplateNodeItem = nodes[currentConnection.source];
+        const nextNode: ITemplateNodeItem = nodes[currentConnection.target];
 
-      ret.steps?.push(nodeStepTemplate);
-      currentNodeId = currentConnection["target"];
-      continue;
+        ret.steps.push({
+          name: node.nodeConfig.template.name || "Untitiled",
+          template: node.nodeConfig.template.name || "Untitiled"
+        });
+
+        ret.steps.push({
+          name: nextNode.nodeConfig.template.name || "Untitiled",
+          template: nextNode.nodeConfig.template.name || "Untitiled"
+        });
+
+        currentNodeId = currentConnection.target;
+        continue;
+      }
     }
+    */
 
     currentNodeId = "";
   }
@@ -81,7 +102,7 @@ const generateTemplateDefinitions = (
   for (const [, value] of Object.entries(graphNodes)) {
     const node = value as ITemplateNodeItem;
 
-    if (["WORKER"].includes(node["type"])) {
+    if (["TEMPLATE"].includes(node["type"])) {
       const template: ITemplate = {
         name: node.nodeConfig.template.name || "Untitled"
       };
@@ -128,20 +149,28 @@ const generateTemplateDefinitions = (
 
 const getTotalSteps = (
   start: string,
-  connections: Dictionary<IFlatConnection> | undefined
+  connections: FlatConnection[]
 ): number => {
+  const _connections = [...connections];
   let head: string | null = start;
   let count = 0;
 
-  if (!connections) {
+  if (!_connections) {
     return 0;
   }
 
   while (head) {
-    const connection: IFlatConnection = connections[head];
+    const connection: FlatConnection | undefined = _connections.find((conn) => {
+      if (conn.source === head) {
+        return conn;
+      }
+    });
+
     if (connection) {
+      const index = _connections.indexOf(connection);
+      _connections.splice(index);
       count++;
-      head = connection["target"];
+      head = connection.target;
     } else {
       head = null;
     }
@@ -174,15 +203,15 @@ export const generatePayload = (graphData: any): IWorkflow => {
   if (firstNode) {
     const totalSteps = getTotalSteps(firstNode.key, connections);
 
-    if (totalSteps >= 2) {
-      const templateInvocator: ITemplate = generateTemplateInvocator(
+    if (totalSteps >= 1) {
+      const stepsTemplate: ITemplate = generateStepsTemplate(
         firstNode,
         nodes,
         connections
       );
 
       base.spec.entrypoint = firstNode.nodeConfig.template.name || "Untitled";
-      base.spec.templates.push(templateInvocator);
+      base.spec.templates.push(stepsTemplate);
     }
 
     if (firstNode.nodeConfig.template.name) {
