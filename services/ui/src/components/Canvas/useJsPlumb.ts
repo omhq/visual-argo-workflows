@@ -16,6 +16,7 @@ import {
   EVENT_DRAG_START,
   EVENT_DRAG_STOP,
   EVENT_CONNECTION_DBL_CLICK,
+  EVENT_ELEMENT_CLICK,
   DragStartPayload,
   DragStopPayload
 } from "@jsplumb/browser-ui";
@@ -339,11 +340,27 @@ export const useJsPlumb = (
 
     jsPlumbInstance.bind(EVENT_DRAG_START, function (params: DragStartPayload) {
       eventBus.dispatch("EVENT_DRAG_START", { message: { id: params.el.id } });
+      params.el.setAttribute("dragging", "true");
     });
 
-    jsPlumbInstance.bind(EVENT_DRAG_STOP, function (params: DragStartPayload) {
+    jsPlumbInstance.bind(EVENT_DRAG_STOP, (params: DragStopPayload) => {
       eventBus.dispatch("EVENT_DRAG_STOP", { message: { id: params.el.id } });
+      setTimeout(() => {
+        params.el.removeAttribute("dragging");
+      }, 100);
     });
+
+    jsPlumbInstance.bind(
+      EVENT_ELEMENT_CLICK,
+      function (element: Element, event: PointerEvent) {
+        if (element.getAttribute("dragging") !== "true") {
+          eventBus.dispatch("EVENT_ELEMENT_CLICK", {
+            event,
+            message: { id: element.id }
+          });
+        }
+      }
+    );
 
     jsPlumbInstance.bind(
       INTERCEPT_BEFORE_DROP,
