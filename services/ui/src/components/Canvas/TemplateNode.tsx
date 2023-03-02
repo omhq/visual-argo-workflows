@@ -9,12 +9,48 @@ interface INodeProps {
   node: ITemplateNodeItem;
   setTemplateToEdit: CallbackFunction;
   setNodeToDelete: CallableFunction;
+  onNodeSelect: CallableFunction;
+  selectedNodes: string[];
 }
 
 export default function TemplateNode(props: INodeProps) {
-  const { node, setTemplateToEdit, setNodeToDelete } = props;
+  const {
+    node,
+    setTemplateToEdit,
+    setNodeToDelete,
+    onNodeSelect,
+    selectedNodes
+  } = props;
   const [nodeDragging, setNodeDragging] = useState<string | null>();
   const [nodeHovering, setNodeHovering] = useState<string | null>();
+
+  const selectNodeHanlder = (detail: any) => {
+    const { event, message } = detail;
+
+    if (event.shiftKey) {
+      if (selectedNodes.includes(message.id)) {
+        console.log("includes");
+        onNodeSelect(selectedNodes.filter((item) => item !== message.id));
+      } else {
+        console.log("not includes");
+        onNodeSelect([...selectedNodes, message.id]);
+      }
+    } else {
+      console.log(
+        selectedNodes,
+        selectedNodes.includes(message.id),
+        message.id
+      );
+      if (selectedNodes.includes(message.id)) {
+        console.log("includes");
+        onNodeSelect([]);
+      } else {
+        console.log("not includes");
+        onNodeSelect([message.id]);
+      }
+      console.log("without shift");
+    }
+  };
 
   useEffect(() => {
     eventBus.on("EVENT_DRAG_START", (data: any) => {
@@ -25,9 +61,14 @@ export default function TemplateNode(props: INodeProps) {
       setNodeDragging(null);
     });
 
+    eventBus.on("EVENT_ELEMENT_CLICK", (data: any) => {
+      selectNodeHanlder(data.detail);
+    });
+
     return () => {
       eventBus.remove("EVENT_DRAG_START", () => undefined);
       eventBus.remove("EVENT_DRAG_STOP", () => undefined);
+      eventBus.remove("EVENT_ELEMENT_CLICK", () => undefined);
     };
   }, []);
 
