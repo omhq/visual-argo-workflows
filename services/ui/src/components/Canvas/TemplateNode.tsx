@@ -9,11 +9,10 @@ interface INodeProps {
   node: ITemplateNodeItem;
   setTemplateToEdit: CallbackFunction;
   setNodeToDelete: CallableFunction;
-  onNodeSelect: CallableFunction;
 }
 
 export default function TemplateNode(props: INodeProps) {
-  const { node, setTemplateToEdit, setNodeToDelete, onNodeSelect } = props;
+  const { node, setTemplateToEdit, setNodeToDelete } = props;
   const [nodeDragging, setNodeDragging] = useState<string | null>();
   const [nodeHovering, setNodeHovering] = useState<string | null>();
 
@@ -26,14 +25,9 @@ export default function TemplateNode(props: INodeProps) {
       setNodeDragging(null);
     });
 
-    eventBus.on("EVENT_ELEMENT_CLICK", (data: any) => {
-      onNodeSelect(data.detail);
-    });
-
     return () => {
       eventBus.remove("EVENT_DRAG_START", () => undefined);
       eventBus.remove("EVENT_DRAG_STOP", () => undefined);
-      eventBus.remove("EVENT_ELEMENT_CLICK", () => undefined);
     };
   }, []);
 

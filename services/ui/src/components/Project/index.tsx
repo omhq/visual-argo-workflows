@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dictionary, omit } from "lodash";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import { ITemplateNodeItem, INodeItem, IClientNodePosition } from "../../types";
@@ -22,11 +22,13 @@ import Header from "./Header";
 export default function Project() {
   const { height } = useWindowDimensions();
   const stateNodesRef = useRef<Dictionary<INodeItem>>();
+  const stateSelectedNodesRef = useRef<Record<string, any>>();
   const stateConnectionsRef = useRef<[[string, string]] | []>();
   const [showModalCreateTemplate, setShowModalCreateTemplate] = useState(false);
   const [templateToEdit, setTemplateToEdit] =
     useState<ITemplateNodeItem | null>(null);
   const [nodeToDelete, setNodeToDelete] = useState<INodeItem | null>(null);
+  const [selectedNodes, setSelectedNodes] = useState<Record<string, any>>({});
   const [nodes, setNodes] = useState<Record<string, INodeItem>>({});
   const [connections, setConnections] = useState<[[string, string]] | []>([]);
   const [canvasPosition, setCanvasPosition] = useState({
@@ -35,10 +37,13 @@ export default function Project() {
     scale: 1
   });
 
+  console.log(selectedNodes, "selectedNodes");
+
   useTitle(["New workflow", ""].join(" | "));
 
   stateNodesRef.current = nodes;
   stateConnectionsRef.current = connections;
+  stateSelectedNodesRef.current = selectedNodes;
 
   const onNodeUpdate = (positionData: IClientNodePosition) => {
     if (stateNodesRef.current) {
@@ -125,6 +130,24 @@ export default function Project() {
     setNodes({ ...omit(nodes, node.key) });
     eventBus.dispatch("NODE_DELETED", { message: { node: node } });
   };
+
+  const onNodeSelect = (data: any) => {
+    if (stateSelectedNodesRef.current) {
+      const selectedNodesNew = { ...stateSelectedNodesRef.current };
+      selectedNodesNew[data.message.id] = {};
+      setSelectedNodes(selectedNodesNew);
+    }
+  };
+
+  useEffect(() => {
+    eventBus.on("EVENT_ELEMENT_CLICK", (data: any) => {
+      onNodeSelect(data.detail);
+    });
+
+    return () => {
+      eventBus.remove("EVENT_ELEMENT_CLICK", () => undefined);
+    };
+  }, []);
 
   return (
     <div className="relative">
