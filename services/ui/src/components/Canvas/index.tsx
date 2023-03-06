@@ -40,7 +40,7 @@ export const Canvas: FC<ICanvasProps> = (props) => {
     setNodeToDelete
   } = props;
   const [dragging, setDragging] = useState(false);
-  const [selectedNodes, setSelectedNodes] = useState([]);
+  const [selectedNodes, setSelectedNodes] = useState<Record<string, any>>({});
   const [scale, setScale] = useState(1);
   const [_scale, _setScale] = useState(1);
   const [_left, _setLeft] = useState(0);
@@ -88,6 +88,12 @@ export const Canvas: FC<ICanvasProps> = (props) => {
       };
       setStyle(styles);
     }
+  };
+
+  const onNodeSelect = (data: any) => {
+    const selectedNodesNew = { ...selectedNodes };
+    selectedNodesNew[data.message.id] = {};
+    setSelectedNodes(selectedNodesNew);
   };
 
   const onCanvasMouseUpLeave = (e: any) => {
@@ -184,8 +190,7 @@ export const Canvas: FC<ICanvasProps> = (props) => {
                     node={x}
                     setTemplateToEdit={setTemplateToEdit}
                     setNodeToDelete={setNodeToDelete}
-                    onNodeSelect={setSelectedNodes}
-                    selectedNodes={selectedNodes}
+                    onNodeSelect={onNodeSelect}
                   />
                 );
               }

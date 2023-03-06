@@ -353,12 +353,10 @@ export const useJsPlumb = (
     jsPlumbInstance.bind(
       EVENT_ELEMENT_CLICK,
       function (element: Element, event: PointerEvent) {
-        if (element.getAttribute("dragging") !== "true") {
-          eventBus.dispatch("EVENT_ELEMENT_CLICK", {
-            event,
-            message: { id: element.id }
-          });
-        }
+        eventBus.dispatch("EVENT_ELEMENT_CLICK", {
+          event,
+          message: { id: element.id }
+        });
       }
     );
 
