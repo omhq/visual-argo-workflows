@@ -1,7 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Dictionary, omit } from "lodash";
 import { PlusIcon, CubeIcon } from "@heroicons/react/20/solid";
-import { ITemplateNodeItem, INodeItem, IClientNodePosition } from "../../types";
+import {
+  ITemplateNodeItem,
+  INodeItem,
+  IClientNodePosition,
+  IGroup
+} from "../../types";
 import eventBus from "../../events/eventBus";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { nodeLibraries } from "../../utils/data/libraries";
@@ -31,6 +36,7 @@ export default function Project() {
   const [nodeToDelete, setNodeToDelete] = useState<INodeItem | null>(null);
   const [selectedNodes, setSelectedNodes] = useState<Record<string, any>>({});
   const [nodes, setNodes] = useState<Record<string, INodeItem>>({});
+  const [groups, setGroups] = useState<Record<string, IGroup>>({});
   const [connections, setConnections] = useState<[[string, string]] | []>([]);
   const [canvasPosition, setCanvasPosition] = useState({
     top: 0,
@@ -151,9 +157,19 @@ export default function Project() {
     onConnectionDetached
   );
 
-  const handleCreateGroup = () => {
-    console.log(selectedNodes);
-  };
+  const handleCreateGroup = useCallback(() => {
+    const newGroup = {
+      id: "untitled",
+      nodeIds: Object.keys(selectedNodes)
+    };
+    const newGroups = {
+      ...groups,
+      untitled: newGroup
+    };
+    setGroups(newGroups);
+
+    jsPlumb.createGroup(newGroup);
+  }, [selectedNodes, groups, jsPlumb.createGroup]);
 
   useEffect(() => {
     eventBus.on("EVENT_ELEMENT_CLICK", (data: any) => {
@@ -237,6 +253,7 @@ export default function Project() {
                   setNodeToDelete(node)
                 }
                 selectedNodes={selectedNodes}
+                groups={groups}
               />
             </div>
           </div>

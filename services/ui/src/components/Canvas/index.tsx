@@ -2,9 +2,15 @@ import { useState, useEffect, ReactElement, FunctionComponent } from "react";
 import { Dictionary, values } from "lodash";
 import { v4 as uuidv4 } from "uuid";
 import eventBus from "../../events/eventBus";
-import { CallbackFunction, ITemplateNodeItem, INodeItem } from "../../types";
+import {
+  CallbackFunction,
+  ITemplateNodeItem,
+  INodeItem,
+  IGroup
+} from "../../types";
 import TemplateNode from "./TemplateNode";
 import { IJsPlumb } from "./useJsPlumb";
+import { Group } from "./Group";
 
 const CANVAS_ID: string = "canvas-container-" + uuidv4();
 
@@ -18,6 +24,7 @@ export interface ICanvasProps {
   setNodeToDelete: CallbackFunction;
   selectedNodes: Record<string, any>;
 
+  groups: Record<string, IGroup>;
   jsPlumb: IJsPlumb;
 }
 
@@ -32,7 +39,8 @@ export const Canvas: FunctionComponent<ICanvasProps> = (
     setTemplateToEdit,
     setNodeToDelete,
     selectedNodes,
-    jsPlumb
+    jsPlumb,
+    groups
   } = props;
 
   const [dragging, setDragging] = useState(false);
@@ -178,6 +186,10 @@ export const Canvas: FunctionComponent<ICanvasProps> = (
                 );
               }
             })}
+
+            {Object.values(groups).map((group) => (
+              <Group key={group.id} group={group} />
+            ))}
           </div>
         </div>
       )}
