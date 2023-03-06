@@ -37,8 +37,6 @@ export default function Project() {
     scale: 1
   });
 
-  console.log(selectedNodes, "selectedNodes");
-
   useTitle(["New workflow", ""].join(" | "));
 
   stateNodesRef.current = nodes;
@@ -64,6 +62,10 @@ export default function Project() {
 
   const onCanvasUpdate = (updatedCanvasPosition: any) => {
     setCanvasPosition({ ...canvasPosition, ...updatedCanvasPosition });
+  };
+
+  const onCanvasClick = () => {
+    setSelectedNodes({});
   };
 
   const onAddEndpoint = (values: any) => {
@@ -139,6 +141,10 @@ export default function Project() {
     }
   };
 
+  const createGroup = () => {
+    console.log(selectedNodes);
+  };
+
   useEffect(() => {
     eventBus.on("EVENT_ELEMENT_CLICK", (data: any) => {
       onNodeSelect(data.detail);
@@ -187,6 +193,16 @@ export default function Project() {
             <div className="relative h-full">
               <div className="absolute top-0 right-0 z-40">
                 <div className="flex space-x-2 p-2">
+                  {Object.keys(selectedNodes).length >= 2 && (
+                    <button
+                      className="flex space-x-1 btn-util"
+                      type="button"
+                      onClick={() => createGroup()}
+                    >
+                      <PlusIcon className="w-4" />
+                      <span>Group selected</span>
+                    </button>
+                  )}
                   <button
                     className="flex space-x-1 btn-util"
                     type="button"
@@ -205,6 +221,7 @@ export default function Project() {
                 onNodeUpdate={(node: IClientNodePosition) => onNodeUpdate(node)}
                 onGraphUpdate={(graphData: any) => onGraphUpdate(graphData)}
                 onCanvasUpdate={(canvasData: any) => onCanvasUpdate(canvasData)}
+                onCanvasClick={() => onCanvasClick()}
                 onConnectionAttached={(connectionData: any) =>
                   onConnectionAttached(connectionData)
                 }
