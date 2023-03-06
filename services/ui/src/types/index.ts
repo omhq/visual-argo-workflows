@@ -277,3 +277,8 @@ export type TFinalFormField =
   | IToggleField
   | IRecordsField<TFinalFormField>
   | IAccordionField;
+
+export interface IGroup {
+  id: string;
+  nodeIds: string[];
+}
