@@ -18,6 +18,7 @@ import ModalTemplateEdit from "../modals/template/Edit";
 import { useTitle } from "../../hooks";
 import CodeBox from "./CodeBox";
 import Header from "./Header";
+import { useJsPlumb } from "../Canvas/useJsPlumb";
 
 export default function Project() {
   const { height } = useWindowDimensions();
@@ -141,6 +142,15 @@ export default function Project() {
     }
   };
 
+  const jsPlumb = useJsPlumb(
+    nodes,
+    connections,
+    onGraphUpdate,
+    onNodeUpdate,
+    onConnectionAttached,
+    onConnectionDetached
+  );
+
   const handleCreateGroup = () => {
     console.log(selectedNodes);
   };
@@ -215,19 +225,11 @@ export default function Project() {
               </div>
 
               <Canvas
+                jsPlumb={jsPlumb}
                 nodes={nodes}
-                connections={connections}
                 canvasPosition={canvasPosition}
-                onNodeUpdate={(node: IClientNodePosition) => onNodeUpdate(node)}
-                onGraphUpdate={(graphData: any) => onGraphUpdate(graphData)}
                 onCanvasUpdate={(canvasData: any) => onCanvasUpdate(canvasData)}
                 onCanvasClick={() => onCanvasClick()}
-                onConnectionAttached={(connectionData: any) =>
-                  onConnectionAttached(connectionData)
-                }
-                onConnectionDetached={(connectionData: any) =>
-                  onConnectionDetached(connectionData)
-                }
                 setTemplateToEdit={(node: ITemplateNodeItem) =>
                   setTemplateToEdit(node)
                 }

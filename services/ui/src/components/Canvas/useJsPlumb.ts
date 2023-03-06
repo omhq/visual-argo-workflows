@@ -33,6 +33,13 @@ import { INodeItem } from "../../types";
 import { Dictionary, isEqual } from "lodash";
 import { IAnchor, CallbackFunction } from "../../types";
 
+export interface IJsPlumb {
+  containerCallbackRef: (containerElement: HTMLDivElement) => void;
+  setZoom: (zoom: number) => void;
+  setStyle: (style: any) => void;
+  removeEndpoint: (node: INodeItem) => void;
+}
+
 export const useJsPlumb = (
   nodes: Dictionary<INodeItem>,
   connections: Array<[string, string]>,
@@ -40,12 +47,7 @@ export const useJsPlumb = (
   onNodeUpdate: CallbackFunction,
   onConnectionAttached: CallbackFunction,
   onConnectionDetached: CallbackFunction
-): [
-  (containerElement: HTMLDivElement) => void,
-  (zoom: number) => void,
-  (style: any) => void,
-  (node: INodeItem) => void
-] => {
+): IJsPlumb => {
   const [instance, setInstance] = useState<BrowserJsPlumbInstance>(null as any);
   const containerRef = useRef<HTMLDivElement>();
   const stateRef = useRef<Dictionary<INodeItem>>();
@@ -454,5 +456,5 @@ export const useJsPlumb = (
     };
   }, []);
 
-  return [containerCallbackRef, setZoom, setStyle, removeEndpoint];
+  return { containerCallbackRef, setZoom, setStyle, removeEndpoint };
 };

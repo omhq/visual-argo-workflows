@@ -1,48 +1,40 @@
-import { FC, useState, useEffect } from "react";
+import { useState, useEffect, ReactElement, FunctionComponent } from "react";
 import { Dictionary, values } from "lodash";
 import { v4 as uuidv4 } from "uuid";
 import eventBus from "../../events/eventBus";
-import {
-  IGraphData,
-  CallbackFunction,
-  ITemplateNodeItem,
-  INodeItem
-} from "../../types";
-import { useJsPlumb } from "./useJsPlumb";
+import { CallbackFunction, ITemplateNodeItem, INodeItem } from "../../types";
 import TemplateNode from "./TemplateNode";
+import { IJsPlumb } from "./useJsPlumb";
 
 const CANVAS_ID: string = "canvas-container-" + uuidv4();
 
-interface ICanvasProps {
+export interface ICanvasProps {
   nodes: Dictionary<INodeItem>;
-  connections: any;
   canvasPosition: any;
-  onNodeUpdate: CallbackFunction;
-  onGraphUpdate: CallbackFunction;
   onCanvasUpdate: CallbackFunction;
   onCanvasClick: CallbackFunction;
-  onConnectionAttached: CallbackFunction;
-  onConnectionDetached: CallbackFunction;
+
   setTemplateToEdit: CallbackFunction;
   setNodeToDelete: CallbackFunction;
   selectedNodes: Record<string, any>;
+
+  jsPlumb: IJsPlumb;
 }
 
-export const Canvas: FC<ICanvasProps> = (props) => {
+export const Canvas: FunctionComponent<ICanvasProps> = (
+  props: ICanvasProps
+): ReactElement => {
   const {
     nodes,
-    connections,
     canvasPosition,
-    onNodeUpdate,
-    onGraphUpdate,
     onCanvasUpdate,
     onCanvasClick,
-    onConnectionAttached,
-    onConnectionDetached,
     setTemplateToEdit,
     setNodeToDelete,
-    selectedNodes
+    selectedNodes,
+    jsPlumb
   } = props;
+
   const [dragging, setDragging] = useState(false);
   const [scale, setScale] = useState(1);
   const [_scale, _setScale] = useState(1);
@@ -55,15 +47,6 @@ export const Canvas: FC<ICanvasProps> = (props) => {
     (document.documentElement.clientWidth * (1 - _scale)) / 2;
   const translateHeight =
     ((document.documentElement.clientHeight - 64) * (1 - _scale)) / 2;
-
-  const [containerCallbackRef, setZoom, setStyle, removeEndpoint] = useJsPlumb(
-    nodes,
-    connections,
-    onGraphUpdate,
-    onNodeUpdate,
-    onConnectionAttached,
-    onConnectionDetached
-  );
 
   const onCanvasMousewheel = (e: any) => {
     if (e.deltaY < 0) {
@@ -87,7 +70,7 @@ export const Canvas: FC<ICanvasProps> = (props) => {
         left: _left + e.pageX - _initX + "px",
         top: _top + e.pageY - _initY + "px"
       };
-      setStyle(styles);
+      jsPlumb.setStyle(styles);
     }
   };
 
@@ -117,7 +100,7 @@ export const Canvas: FC<ICanvasProps> = (props) => {
   };
 
   useEffect(() => {
-    setZoom(_scale);
+    jsPlumb.setZoom(_scale);
   }, [_scale]);
 
   useEffect(() => {
@@ -132,8 +115,8 @@ export const Canvas: FC<ICanvasProps> = (props) => {
       top: _top + "px"
     };
 
-    setStyle(styles);
-  }, [_left, _top, setStyle]);
+    jsPlumb.setStyle(styles);
+  }, [_left, _top, jsPlumb.setStyle]);
 
   useEffect(() => {
     _setTop(canvasPosition.top);
@@ -143,7 +126,7 @@ export const Canvas: FC<ICanvasProps> = (props) => {
 
   useEffect(() => {
     eventBus.on("NODE_DELETED", (data: any) => {
-      removeEndpoint(data.detail.message.node);
+      jsPlumb.removeEndpoint(data.detail.message.node);
     });
 
     return () => {
@@ -169,7 +152,7 @@ export const Canvas: FC<ICanvasProps> = (props) => {
         >
           <div
             id={CANVAS_ID}
-            ref={containerCallbackRef}
+            ref={jsPlumb.containerCallbackRef}
             onClick={(ev: any) => {
               if (ev.target.id && ev.target.id === CANVAS_ID) {
                 onCanvasClick();
