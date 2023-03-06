@@ -29,7 +29,7 @@ import {
 } from "../../utils/options";
 import eventBus from "../../events/eventBus";
 import { getConnections } from "../../utils";
-import { INodeItem } from "../../types";
+import { IGroup, INodeItem } from "../../types";
 import { Dictionary, isEqual } from "lodash";
 import { IAnchor, CallbackFunction } from "../../types";
 
@@ -38,6 +38,7 @@ export interface IJsPlumb {
   setZoom: (zoom: number) => void;
   setStyle: (style: any) => void;
   removeEndpoint: (node: INodeItem) => void;
+  createGroup: (group: IGroup) => void;
 }
 
 export const useJsPlumb = (
@@ -59,6 +60,23 @@ export const useJsPlumb = (
       containerRef.current = containerElement;
     },
     []
+  );
+
+  const createGroup = useCallback(
+    (group: IGroup) => {
+      if (!instance) {
+        return;
+      }
+
+      const el = document.getElementById(group.id) as Element;
+      if (el) {
+        instance.addGroup({
+          el,
+          id: group.id
+        });
+      }
+    },
+    [instance]
   );
 
   const addEndpoints = useCallback(
@@ -456,5 +474,11 @@ export const useJsPlumb = (
     };
   }, []);
 
-  return { containerCallbackRef, setZoom, setStyle, removeEndpoint };
+  return {
+    createGroup,
+    containerCallbackRef,
+    setZoom,
+    setStyle,
+    removeEndpoint
+  };
 };
