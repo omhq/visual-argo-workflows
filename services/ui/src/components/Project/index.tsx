@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Dictionary, omit } from "lodash";
-import { PlusIcon } from "@heroicons/react/20/solid";
+import { PlusIcon, CubeIcon } from "@heroicons/react/20/solid";
 import { ITemplateNodeItem, INodeItem, IClientNodePosition } from "../../types";
 import eventBus from "../../events/eventBus";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
@@ -141,7 +141,7 @@ export default function Project() {
     }
   };
 
-  const createGroup = () => {
+  const handleCreateGroup = () => {
     console.log(selectedNodes);
   };
 
@@ -197,9 +197,9 @@ export default function Project() {
                     <button
                       className="flex space-x-1 btn-util"
                       type="button"
-                      onClick={() => createGroup()}
+                      onClick={handleCreateGroup}
                     >
-                      <PlusIcon className="w-4" />
+                      <CubeIcon className="w-4" />
                       <span>Group selected</span>
                     </button>
                   )}
