@@ -20,10 +20,12 @@ interface ICanvasProps {
   onNodeUpdate: CallbackFunction;
   onGraphUpdate: CallbackFunction;
   onCanvasUpdate: CallbackFunction;
+  onCanvasClick: CallbackFunction;
   onConnectionAttached: CallbackFunction;
   onConnectionDetached: CallbackFunction;
   setTemplateToEdit: CallbackFunction;
   setNodeToDelete: CallbackFunction;
+  selectedNodes: Record<string, any>;
 }
 
 export const Canvas: FC<ICanvasProps> = (props) => {
@@ -34,10 +36,12 @@ export const Canvas: FC<ICanvasProps> = (props) => {
     onNodeUpdate,
     onGraphUpdate,
     onCanvasUpdate,
+    onCanvasClick,
     onConnectionAttached,
     onConnectionDetached,
     setTemplateToEdit,
-    setNodeToDelete
+    setNodeToDelete,
+    selectedNodes
   } = props;
   const [dragging, setDragging] = useState(false);
   const [scale, setScale] = useState(1);
@@ -166,6 +170,11 @@ export const Canvas: FC<ICanvasProps> = (props) => {
           <div
             id={CANVAS_ID}
             ref={containerCallbackRef}
+            onClick={(ev: any) => {
+              if (ev.target.id && ev.target.id === CANVAS_ID) {
+                onCanvasClick();
+              }
+            }}
             className="canvas"
             style={{
               transformOrigin: "0px 0px 0px",
@@ -181,6 +190,7 @@ export const Canvas: FC<ICanvasProps> = (props) => {
                     node={x}
                     setTemplateToEdit={setTemplateToEdit}
                     setNodeToDelete={setNodeToDelete}
+                    selected={x.key in selectedNodes}
                   />
                 );
               }

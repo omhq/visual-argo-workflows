@@ -9,10 +9,11 @@ interface INodeProps {
   node: ITemplateNodeItem;
   setTemplateToEdit: CallbackFunction;
   setNodeToDelete: CallableFunction;
+  selected: boolean;
 }
 
 export default function TemplateNode(props: INodeProps) {
-  const { node, setTemplateToEdit, setNodeToDelete } = props;
+  const { node, setTemplateToEdit, setNodeToDelete, selected } = props;
   const [nodeDragging, setNodeDragging] = useState<string | null>();
   const [nodeHovering, setNodeHovering] = useState<string | null>();
 
@@ -36,7 +37,13 @@ export default function TemplateNode(props: INodeProps) {
       key={node.key}
       className={"node-item cursor-pointer shadow flex flex-col group"}
       id={node.key}
-      style={{ top: node.position.top, left: node.position.left }}
+      style={{
+        top: node.position.top,
+        left: node.position.left,
+        borderStyle: selected ? "dashed" : "none",
+        borderWidth: 1,
+        borderColor: "#1d4ed8"
+      }}
       onMouseEnter={() => setNodeHovering(node.key)}
       onMouseLeave={() => {
         if (nodeHovering === node.key) {

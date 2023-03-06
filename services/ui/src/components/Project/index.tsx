@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dictionary, omit } from "lodash";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import { ITemplateNodeItem, INodeItem, IClientNodePosition } from "../../types";
@@ -22,11 +22,13 @@ import Header from "./Header";
 export default function Project() {
   const { height } = useWindowDimensions();
   const stateNodesRef = useRef<Dictionary<INodeItem>>();
+  const stateSelectedNodesRef = useRef<Record<string, any>>();
   const stateConnectionsRef = useRef<[[string, string]] | []>();
   const [showModalCreateTemplate, setShowModalCreateTemplate] = useState(false);
   const [templateToEdit, setTemplateToEdit] =
     useState<ITemplateNodeItem | null>(null);
   const [nodeToDelete, setNodeToDelete] = useState<INodeItem | null>(null);
+  const [selectedNodes, setSelectedNodes] = useState<Record<string, any>>({});
   const [nodes, setNodes] = useState<Record<string, INodeItem>>({});
   const [connections, setConnections] = useState<[[string, string]] | []>([]);
   const [canvasPosition, setCanvasPosition] = useState({
@@ -39,6 +41,7 @@ export default function Project() {
 
   stateNodesRef.current = nodes;
   stateConnectionsRef.current = connections;
+  stateSelectedNodesRef.current = selectedNodes;
 
   const onNodeUpdate = (positionData: IClientNodePosition) => {
     if (stateNodesRef.current) {
@@ -59,6 +62,10 @@ export default function Project() {
 
   const onCanvasUpdate = (updatedCanvasPosition: any) => {
     setCanvasPosition({ ...canvasPosition, ...updatedCanvasPosition });
+  };
+
+  const onCanvasClick = () => {
+    setSelectedNodes({});
   };
 
   const onAddEndpoint = (values: any) => {
@@ -126,6 +133,28 @@ export default function Project() {
     eventBus.dispatch("NODE_DELETED", { message: { node: node } });
   };
 
+  const onNodeSelect = (data: any) => {
+    if (stateSelectedNodesRef.current) {
+      const selectedNodesNew = { ...stateSelectedNodesRef.current };
+      selectedNodesNew[data.message.id] = {};
+      setSelectedNodes(selectedNodesNew);
+    }
+  };
+
+  const createGroup = () => {
+    console.log(selectedNodes);
+  };
+
+  useEffect(() => {
+    eventBus.on("EVENT_ELEMENT_CLICK", (data: any) => {
+      onNodeSelect(data.detail);
+    });
+
+    return () => {
+      eventBus.remove("EVENT_ELEMENT_CLICK", () => undefined);
+    };
+  }, []);
+
   return (
     <div className="relative">
       {showModalCreateTemplate ? (
@@ -164,6 +193,16 @@ export default function Project() {
             <div className="relative h-full">
               <div className="absolute top-0 right-0 z-40">
                 <div className="flex space-x-2 p-2">
+                  {Object.keys(selectedNodes).length >= 2 && (
+                    <button
+                      className="flex space-x-1 btn-util"
+                      type="button"
+                      onClick={() => createGroup()}
+                    >
+                      <PlusIcon className="w-4" />
+                      <span>Group selected</span>
+                    </button>
+                  )}
                   <button
                     className="flex space-x-1 btn-util"
                     type="button"
@@ -182,6 +221,7 @@ export default function Project() {
                 onNodeUpdate={(node: IClientNodePosition) => onNodeUpdate(node)}
                 onGraphUpdate={(graphData: any) => onGraphUpdate(graphData)}
                 onCanvasUpdate={(canvasData: any) => onCanvasUpdate(canvasData)}
+                onCanvasClick={() => onCanvasClick()}
                 onConnectionAttached={(connectionData: any) =>
                   onConnectionAttached(connectionData)
                 }
@@ -194,6 +234,7 @@ export default function Project() {
                 setNodeToDelete={(node: ITemplateNodeItem) =>
                   setNodeToDelete(node)
                 }
+                selectedNodes={selectedNodes}
               />
             </div>
           </div>
