@@ -59,10 +59,10 @@ export const Canvas: FC<ICanvasProps> = (props) => {
   const [containerCallbackRef, setZoom, setStyle, removeEndpoint] = useJsPlumb(
     nodes,
     connections,
-    (graphData: IGraphData) => onGraphUpdate(graphData),
-    (positionData: any) => onNodeUpdate(positionData),
-    (connectionData: any) => onConnectionAttached(connectionData),
-    (connectionData: any) => onConnectionDetached(connectionData)
+    onGraphUpdate,
+    onNodeUpdate,
+    onConnectionAttached,
+    onConnectionDetached
   );
 
   const onCanvasMousewheel = (e: any) => {
