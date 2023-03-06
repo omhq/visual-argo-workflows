@@ -25,6 +25,7 @@ interface ICanvasProps {
   onConnectionDetached: CallbackFunction;
   setTemplateToEdit: CallbackFunction;
   setNodeToDelete: CallbackFunction;
+  selectedNodes: Record<string, any>;
 }
 
 export const Canvas: FC<ICanvasProps> = (props) => {
@@ -39,7 +40,8 @@ export const Canvas: FC<ICanvasProps> = (props) => {
     onConnectionAttached,
     onConnectionDetached,
     setTemplateToEdit,
-    setNodeToDelete
+    setNodeToDelete,
+    selectedNodes
   } = props;
   const [dragging, setDragging] = useState(false);
   const [scale, setScale] = useState(1);
@@ -188,6 +190,7 @@ export const Canvas: FC<ICanvasProps> = (props) => {
                     node={x}
                     setTemplateToEdit={setTemplateToEdit}
                     setNodeToDelete={setNodeToDelete}
+                    selected={x.key in selectedNodes}
                   />
                 );
               }

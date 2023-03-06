@@ -234,6 +234,7 @@ export default function Project() {
                 setNodeToDelete={(node: ITemplateNodeItem) =>
                   setNodeToDelete(node)
                 }
+                selectedNodes={selectedNodes}
               />
             </div>
           </div>
