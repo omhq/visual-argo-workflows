@@ -1,21 +1,12 @@
 import { styled } from "@mui/material";
 import { FunctionComponent, ReactElement, ReactNode } from "react";
-import { useHover } from "../../hooks";
 import { IGroup } from "../../types";
-import { GroupPopover } from "./GroupPopover";
 
 const Root = styled("div")`
   width: fit-content;
   height: fit-content;
   position: absolute;
-`;
 
-const Label = styled("span")`
-  font-size: 12px;
-  font-weight: 500;
-`;
-
-const NodeContainer = styled("div")`
   min-width: 200px;
   min-height: 200px;
   width: fit-content;
@@ -25,6 +16,11 @@ const NodeContainer = styled("div")`
   border-color: #9f63c4;
   border-style: dotted;
   border-width: 1px;
+`;
+
+const Label = styled("span")`
+  font-size: 12px;
+  font-weight: 500;
 `;
 
 export interface IGroupProps {
@@ -40,7 +36,7 @@ export const Group: FunctionComponent<IGroupProps> = (
   return (
     <Root id={group.id}>
       <Label>{group.id}</Label>
-      <NodeContainer>{children}</NodeContainer>
+      {children}
     </Root>
   );
 };
