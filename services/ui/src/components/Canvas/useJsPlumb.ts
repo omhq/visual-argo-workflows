@@ -91,7 +91,9 @@ export const useJsPlumb = (
         if (!exists) {
           instance.addGroup({
             el: element,
-            id: group.id
+            id: group.id,
+            droppable: true,
+            dropOverride: true
           });
         }
       }
