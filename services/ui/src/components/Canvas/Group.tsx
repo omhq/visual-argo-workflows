@@ -37,13 +37,8 @@ export const Group: FunctionComponent<IGroupProps> = (
 ): ReactElement => {
   const { group, children } = props;
 
-  const [ref, hover] = useHover<HTMLDivElement>();
-
   return (
-    <Root ref={ref as any} id={group.id}>
-      {hover && (
-        <GroupPopover onEdit={() => undefined} onDelete={() => undefined} />
-      )}
+    <Root id={group.id}>
       <Label>{group.id}</Label>
       <NodeContainer>{children}</NodeContainer>
     </Root>
