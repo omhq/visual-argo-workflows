@@ -18,15 +18,23 @@ export default function TemplateNode(props: INodeProps) {
   const [nodeHovering, setNodeHovering] = useState<string | null>();
 
   useEffect(() => {
+    let mounted = true;
+
     eventBus.on("EVENT_DRAG_START", (data: any) => {
-      setNodeDragging(data.detail.message.id);
+      if (mounted) {
+        setNodeDragging(data.detail.message.id);
+      }
     });
 
     eventBus.on("EVENT_DRAG_STOP", () => {
-      setNodeDragging(null);
+      if (mounted) {
+        setNodeDragging(null);
+      }
     });
 
     return () => {
+      mounted = false;
+
       eventBus.remove("EVENT_DRAG_START", () => undefined);
       eventBus.remove("EVENT_DRAG_STOP", () => undefined);
     };
