@@ -7,6 +7,7 @@ import { GroupPopover } from "./GroupPopover";
 const Root = styled("div")`
   width: fit-content;
   height: fit-content;
+  position: absolute;
 `;
 
 const Label = styled("span")`
