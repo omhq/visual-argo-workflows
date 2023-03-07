@@ -150,6 +150,7 @@ export default function Project() {
 
   const jsPlumb = useJsPlumb(
     nodes,
+    groups,
     connections,
     onGraphUpdate,
     onNodeUpdate,
@@ -167,9 +168,7 @@ export default function Project() {
       untitled: newGroup
     };
     setGroups(newGroups);
-
-    jsPlumb.createGroup(newGroup);
-  }, [selectedNodes, groups, jsPlumb.createGroup]);
+  }, [selectedNodes, groups]);
 
   useEffect(() => {
     eventBus.on("EVENT_ELEMENT_CLICK", (data: any) => {

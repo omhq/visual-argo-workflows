@@ -38,11 +38,11 @@ export interface IJsPlumb {
   setZoom: (zoom: number) => void;
   setStyle: (style: any) => void;
   removeEndpoint: (node: INodeItem) => void;
-  createGroup: (group: IGroup) => void;
 }
 
 export const useJsPlumb = (
   nodes: Dictionary<INodeItem>,
+  groups: Record<string, IGroup>,
   connections: Array<[string, string]>,
   onGraphUpdate: CallbackFunction,
   onNodeUpdate: CallbackFunction,
@@ -62,22 +62,29 @@ export const useJsPlumb = (
     []
   );
 
-  const createGroup = useCallback(
-    (group: IGroup) => {
-      if (!instance) {
-        return;
-      }
+  /* Associate group elements to JsPlumb, after which JsPlumb will manage it.
+   * You can verify if JsPlumb manages a given element by checking the presence
+   * of "data-jtk-managed" and "data-jtk-group" attributes.
+   *
+   * The groups are not rendered by JsPlumb. Instead they are rendered by the
+   * `Canvas` component. Therefore, we associate groups inside `useEffect`, which
+   * allows us to "wait" for the elements to be rendered.
+   */
+  useEffect(() => {
+    if (!instance) {
+      return;
+    }
 
-      const el = document.getElementById(group.id) as Element;
-      if (el) {
+    for (const group of Object.values(groups)) {
+      const element = document.getElementById(group.id) as Element;
+      if (element) {
         instance.addGroup({
-          el,
+          el: element,
           id: group.id
         });
       }
-    },
-    [instance]
-  );
+    }
+  }, [groups]);
 
   const addEndpoints = useCallback(
     (
@@ -475,7 +482,6 @@ export const useJsPlumb = (
   }, []);
 
   return {
-    createGroup,
     containerCallbackRef,
     setZoom,
     setStyle,
