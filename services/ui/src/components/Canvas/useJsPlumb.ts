@@ -8,7 +8,10 @@ import {
   ConnectionSelection,
   EVENT_CONNECTION,
   EVENT_CONNECTION_DETACHED,
-  INTERCEPT_BEFORE_DROP
+  EVENT_GROUP_MEMBER_REMOVED,
+  EVENT_GROUP_REMOVED,
+  INTERCEPT_BEFORE_DROP,
+  UIGroup
 } from "@jsplumb/core";
 import {
   BrowserJsPlumbInstance,
@@ -38,6 +41,7 @@ export interface IJsPlumb {
   setZoom: (zoom: number) => void;
   setStyle: (style: any) => void;
   removeEndpoint: (node: INodeItem) => void;
+  addToGroup: (group: IGroup, el: any) => void;
 }
 
 export const useJsPlumb = (
@@ -61,45 +65,6 @@ export const useJsPlumb = (
     },
     []
   );
-
-  /* Associate group elements to JsPlumb, after which JsPlumb will manage it.
-   * You can verify if JsPlumb manages a given element by checking the presence
-   * of "data-jtk-managed" and "data-jtk-group" attributes.
-   *
-   * The groups are not rendered by JsPlumb. Instead they are rendered by the
-   * `Canvas` component. Therefore, we associate groups inside `useEffect`, which
-   * allows us to "wait" for the elements to be rendered.
-   */
-  useEffect(() => {
-    if (!instance) {
-      return;
-    }
-
-    for (const group of Object.values(groups)) {
-      const element = document.getElementById(group.id) as Element;
-      if (element) {
-        let exists = true;
-        /* Alternatively, we can clear all the groups by calling
-         * `instance.removeAllGroups()`.
-         */
-        try {
-          instance.getGroup(group.id);
-        } catch (error) {
-          exists = false;
-        }
-
-        if (!exists) {
-          instance.addGroup({
-            el: element,
-            id: group.id,
-            droppable: true,
-            dropOverride: true,
-            constrain: true
-          });
-        }
-      }
-    }
-  }, [groups]);
 
   const addEndpoints = useCallback(
     (
@@ -150,6 +115,36 @@ export const useJsPlumb = (
     },
     [instance]
   );
+
+  const addToGroup = (group: IGroup, el: any) => {
+    if (!instanceRef.current) return;
+    const instance = instanceRef.current;
+    instance.addToGroup(group.id, el);
+  };
+
+  const addGroup = (groupId: string): UIGroup | void => {
+    if (!instanceRef.current) return;
+    const instance = instanceRef.current;
+    const element = document.getElementById(groupId) as Element;
+
+    try {
+      return instance.getGroup(groupId);
+    } catch (error) {
+      if (element) {
+        try {
+          return instance.addGroup({
+            el: element,
+            id: groupId,
+            droppable: true,
+            dropOverride: true,
+            orphan: true
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
+  };
 
   const removeEndpoint = (node: any) => {
     if (!instanceRef.current) return;
@@ -375,6 +370,23 @@ export const useJsPlumb = (
   }, [connections, instance]);
 
   useEffect(() => {
+    if (!instance) return;
+
+    for (const group of Object.values(groups)) {
+      const uiGroup = addGroup(group.id);
+
+      if (uiGroup) {
+        for (const nodeId of group.nodeIds) {
+          const el = document.getElementById(nodeId);
+          if (el) {
+            instance.addToGroup(group.id, el);
+          }
+        }
+      }
+    }
+  }, [groups, instance]);
+
+  useEffect(() => {
     const jsPlumbInstance: BrowserJsPlumbInstance = newInstance({
       ...defaultOptions,
       container: containerRef.current
@@ -500,6 +512,7 @@ export const useJsPlumb = (
     containerCallbackRef,
     setZoom,
     setStyle,
-    removeEndpoint
+    removeEndpoint,
+    addToGroup
   };
 };

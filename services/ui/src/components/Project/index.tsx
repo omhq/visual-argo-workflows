@@ -14,7 +14,8 @@ import {
   getClientNodeItem,
   flattenLibraries,
   ensure,
-  getMatchingSetIndex
+  getMatchingSetIndex,
+  attachUUID
 } from "../../utils";
 import { Canvas } from "../Canvas";
 import ModalConfirmDelete from "../modals/ConfirmDelete";
@@ -165,7 +166,7 @@ export default function Project() {
   );
 
   const handleCreateGroup = useCallback(() => {
-    const newGroupId = `untitled-${getRandomInteger(10000, 99000)}`;
+    const newGroupId = attachUUID("group");
     const newGroup = {
       id: newGroupId,
       nodeIds: Object.keys(selectedNodes)

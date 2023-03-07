@@ -18,11 +18,6 @@ const Root = styled("div")`
   border-width: 1px;
 `;
 
-const Label = styled("span")`
-  font-size: 12px;
-  font-weight: 500;
-`;
-
 export interface IGroupProps {
   group: IGroup;
 }
@@ -32,9 +27,5 @@ export const Group: FunctionComponent<IGroupProps> = (
 ): ReactElement => {
   const { group } = props;
 
-  return (
-    <Root id={group.id}>
-      <Label>{group.id}</Label>
-    </Root>
-  );
+  return <Root id={group.id}></Root>;
 };
