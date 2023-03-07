@@ -78,10 +78,22 @@ export const useJsPlumb = (
     for (const group of Object.values(groups)) {
       const element = document.getElementById(group.id) as Element;
       if (element) {
-        instance.addGroup({
-          el: element,
-          id: group.id
-        });
+        let exists = true;
+        /* Alternatively, we can clear all the groups by calling
+         * `instance.removeAllGroups()`.
+         */
+        try {
+          instance.getGroup(group.id);
+        } catch (error) {
+          exists = false;
+        }
+
+        if (!exists) {
+          instance.addGroup({
+            el: element,
+            id: group.id
+          });
+        }
       }
     }
   }, [groups]);

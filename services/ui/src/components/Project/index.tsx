@@ -25,6 +25,12 @@ import CodeBox from "./CodeBox";
 import Header from "./Header";
 import { useJsPlumb } from "../Canvas/useJsPlumb";
 
+const getRandomInteger = (min: number, max: number) => {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min);
+};
+
 export default function Project() {
   const { height } = useWindowDimensions();
   const stateNodesRef = useRef<Dictionary<INodeItem>>();
@@ -159,13 +165,14 @@ export default function Project() {
   );
 
   const handleCreateGroup = useCallback(() => {
+    const newGroupId = `untitled-${getRandomInteger(10000, 99000)}`;
     const newGroup = {
-      id: "untitled",
+      id: newGroupId,
       nodeIds: Object.keys(selectedNodes)
     };
     const newGroups = {
       ...groups,
-      untitled: newGroup
+      [newGroupId]: newGroup
     };
     setGroups(newGroups);
   }, [selectedNodes, groups]);
