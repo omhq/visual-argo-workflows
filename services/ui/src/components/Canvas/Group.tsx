@@ -1,5 +1,5 @@
 import { styled } from "@mui/material";
-import { FunctionComponent, ReactElement } from "react";
+import { FunctionComponent, ReactElement, ReactNode } from "react";
 import { useHover } from "../../hooks";
 import { IGroup } from "../../types";
 import { GroupPopover } from "./GroupPopover";
@@ -29,12 +29,13 @@ const NodeContainer = styled("div")`
 
 export interface IGroupProps {
   group: IGroup;
+  children?: ReactNode;
 }
 
 export const Group: FunctionComponent<IGroupProps> = (
   props: IGroupProps
 ): ReactElement => {
-  const { group } = props;
+  const { group, children } = props;
 
   const [ref, hover] = useHover<HTMLDivElement>();
 
@@ -44,7 +45,7 @@ export const Group: FunctionComponent<IGroupProps> = (
         <GroupPopover onEdit={() => undefined} onDelete={() => undefined} />
       )}
       <Label>{group.id}</Label>
-      <NodeContainer />
+      <NodeContainer>{children}</NodeContainer>
     </Root>
   );
 };
