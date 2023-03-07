@@ -53,10 +53,10 @@ export default function TemplateNode(props: INodeProps) {
     >
       {nodeHovering === node.key && nodeDragging !== node.key && (
         <Popover
-          onEditClick={() => {
+          onEdit={() => {
             setTemplateToEdit(node);
           }}
-          onDeleteClick={() => {
+          onDelete={() => {
             setNodeToDelete(node);
           }}
         ></Popover>
