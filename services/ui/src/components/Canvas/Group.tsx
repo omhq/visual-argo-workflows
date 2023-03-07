@@ -38,12 +38,12 @@ export const Group: FunctionComponent<IGroupProps> = (
   const [ref, hover] = useHover<HTMLDivElement>();
 
   return (
-    <Root ref={ref as any}>
+    <Root ref={ref as any} id={group.id}>
       {hover && (
         <GroupPopover onEdit={() => undefined} onDelete={() => undefined} />
       )}
       <Label>{group.id}</Label>
-      <NodeContainer id={group.id} />
+      <NodeContainer />
     </Root>
   );
 };
