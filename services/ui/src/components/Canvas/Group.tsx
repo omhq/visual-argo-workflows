@@ -1,5 +1,5 @@
 import { styled } from "@mui/material";
-import { FunctionComponent, ReactElement, ReactNode } from "react";
+import { FunctionComponent, ReactElement } from "react";
 import { IGroup } from "../../types";
 
 const Root = styled("div")`
@@ -25,18 +25,16 @@ const Label = styled("span")`
 
 export interface IGroupProps {
   group: IGroup;
-  children?: ReactNode;
 }
 
 export const Group: FunctionComponent<IGroupProps> = (
   props: IGroupProps
 ): ReactElement => {
-  const { group, children } = props;
+  const { group } = props;
 
   return (
     <Root id={group.id}>
       <Label>{group.id}</Label>
-      {children}
     </Root>
   );
 };

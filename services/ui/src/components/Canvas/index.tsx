@@ -142,23 +142,6 @@ export const Canvas: FunctionComponent<ICanvasProps> = (
     };
   }, []);
 
-  const childrenByGroups: Record<string, INodeItem[]> = Object.fromEntries(
-    Object.keys(groups).map((key) => [
-      key,
-      groups[key].nodeIds.map((nodeId) => nodes[nodeId])
-    ])
-  );
-
-  const childrenWithoutGroups = values(nodes).filter((node) => {
-    for (const group of Object.values(groups)) {
-      const index = group.nodeIds.findIndex((nodeId) => node.key === nodeId);
-      if (index >= 0) {
-        return false;
-      }
-    }
-    return true;
-  });
-
   return (
     <>
       {nodes && (
@@ -189,7 +172,7 @@ export const Canvas: FunctionComponent<ICanvasProps> = (
               transform: `translate(${translateWidth}px, ${translateHeight}px) scale(${_scale})`
             }}
           >
-            {childrenWithoutGroups.map((x) => {
+            {values(nodes).map((x) => {
               if (x.type === "TEMPLATE") {
                 x = x as ITemplateNodeItem;
                 return (
@@ -205,22 +188,7 @@ export const Canvas: FunctionComponent<ICanvasProps> = (
             })}
 
             {Object.values(groups).map((group) => (
-              <Group key={group.id} group={group}>
-                {childrenByGroups[group.id].map((x) => {
-                  if (x.type === "TEMPLATE") {
-                    x = x as ITemplateNodeItem;
-                    return (
-                      <TemplateNode
-                        key={x.key}
-                        node={x}
-                        setTemplateToEdit={setTemplateToEdit}
-                        setNodeToDelete={setNodeToDelete}
-                        selected={x.key in selectedNodes}
-                      />
-                    );
-                  }
-                })}
-              </Group>
+              <Group key={group.id} group={group} />
             ))}
           </div>
         </div>

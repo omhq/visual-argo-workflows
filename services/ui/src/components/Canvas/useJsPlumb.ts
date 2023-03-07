@@ -93,7 +93,8 @@ export const useJsPlumb = (
             el: element,
             id: group.id,
             droppable: true,
-            dropOverride: true
+            dropOverride: true,
+            constrain: true
           });
         }
       }
