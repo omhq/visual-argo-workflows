@@ -9,7 +9,7 @@ import Suspend from "./Suspend";
 import {
   getInitialValues,
   validationSchema,
-  getFinalValues
+  getTemplateNodeFinalValues
 } from "./form-utils";
 import { ITemplateNodeItem } from "../../../types";
 import { reportErrorsAndSubmit } from "../../../utils/forms";
@@ -31,9 +31,13 @@ const ModalEdit = (props: IModalProps) => {
 
   const handleUpdate = useCallback(
     (values: any, formik: any) => {
-      onUpdateEndpoint(getFinalValues(values, node), values, formik);
+      onUpdateEndpoint(
+        getTemplateNodeFinalValues(values, node),
+        values,
+        formik
+      );
     },
-    [getFinalValues, onUpdateEndpoint]
+    [getTemplateNodeFinalValues, onUpdateEndpoint]
   );
 
   return (

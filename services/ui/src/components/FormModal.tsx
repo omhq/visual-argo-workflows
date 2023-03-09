@@ -24,7 +24,7 @@ export interface IFormModalProps {
   title: string;
   tabs: ITab[];
   onHide: () => void;
-  getFinalValues: (values: any, selectedNode?: any) => any;
+  getTemplateNodeFinalValues: (values: any, selectedNode?: any) => any;
   getInitialValues: (selectedNode?: any) => any;
   validationSchema: any;
   onCreate: (finalValues: any, values: any, formik: any) => void;
@@ -63,7 +63,7 @@ const FormModal = (props: IFormModalProps) => {
     title,
     tabs,
     getInitialValues,
-    getFinalValues,
+    getTemplateNodeFinalValues,
     validationSchema,
     onHide,
     onCreate,
@@ -79,9 +79,13 @@ const FormModal = (props: IFormModalProps) => {
 
   const handleCreate = useCallback(
     (values: any, formik: any) => {
-      onCreate(getFinalValues(values, selectedNode), values, formik);
+      onCreate(
+        getTemplateNodeFinalValues(values, selectedNode),
+        values,
+        formik
+      );
     },
-    [getFinalValues, onCreate]
+    [getTemplateNodeFinalValues, onCreate]
   );
 
   const renderTab = (tab: ITab) => {

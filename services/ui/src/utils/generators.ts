@@ -214,8 +214,10 @@ export const generatePayload = (graphData: any): IWorkflow => {
       base.spec.templates.push(stepsTemplate);
     }
 
-    if (firstNode.nodeConfig.template.name) {
-      base.spec.entrypoint = firstNode.nodeConfig.template.name;
+    if (firstNode.type === "TEMPLATE") {
+      if (firstNode.nodeConfig.template.name) {
+        base.spec.entrypoint = firstNode.nodeConfig.template.name;
+      }
     }
   }
 

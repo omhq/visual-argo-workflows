@@ -9,7 +9,7 @@ import Suspend from "./Suspend";
 import {
   getInitialValues,
   validationSchema,
-  getFinalValues
+  getTemplateNodeFinalValues
 } from "./form-utils";
 import Tabs from "./Tabs";
 import { reportErrorsAndSubmit } from "../../../utils/forms";
@@ -26,9 +26,9 @@ const ModalCreate = (props: IModalProps) => {
 
   const handleCreate = useCallback(
     (values: any, formik: any) => {
-      onAddEndpoint(getFinalValues(values), values, formik);
+      onAddEndpoint(getTemplateNodeFinalValues(values), values, formik);
     },
-    [getFinalValues, onAddEndpoint]
+    [getTemplateNodeFinalValues, onAddEndpoint]
   );
 
   return (

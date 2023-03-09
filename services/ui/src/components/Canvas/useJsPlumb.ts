@@ -8,8 +8,11 @@ import {
   ConnectionSelection,
   EVENT_CONNECTION,
   EVENT_CONNECTION_DETACHED,
+  EVENT_GROUP_MEMBER_ADDED,
   EVENT_GROUP_MEMBER_REMOVED,
   EVENT_GROUP_REMOVED,
+  EVENT_NESTED_GROUP_ADDED,
+  EVENT_NESTED_GROUP_REMOVED,
   INTERCEPT_BEFORE_DROP,
   UIGroup
 } from "@jsplumb/core";
@@ -46,7 +49,6 @@ export interface IJsPlumb {
 
 export const useJsPlumb = (
   nodes: Dictionary<INodeItem>,
-  groups: Record<string, IGroup>,
   connections: Array<[string, string]>,
   onGraphUpdate: CallbackFunction,
   onNodeUpdate: CallbackFunction,
@@ -119,7 +121,7 @@ export const useJsPlumb = (
   const addToGroup = (group: IGroup, el: any) => {
     if (!instanceRef.current) return;
     const instance = instanceRef.current;
-    instance.addToGroup(group.id, el);
+    //instance.addToGroup(group.id, el);
   };
 
   const addGroup = (groupId: string): UIGroup | void => {
@@ -301,6 +303,16 @@ export const useJsPlumb = (
     instance.destroy();
   };
 
+  const getOrCreateUIGroup = (key: string): UIGroup | void => {
+    if (!instance) return;
+
+    try {
+      return instance.getGroup(key);
+    } catch (e) {
+      return addGroup(key);
+    }
+  };
+
   useEffect(() => {
     if (!instance) return;
 
@@ -317,6 +329,25 @@ export const useJsPlumb = (
               getAnchors(x.inputs, inputAnchors),
               maxConnections
             );
+          }
+        }
+
+        if (x.type === "GROUP") {
+          const uiGroup = getOrCreateUIGroup(x.key);
+
+          if (uiGroup) {
+            if (x.nodeConfig.group.nodeIds.length) {
+              for (const nodeId of x.nodeConfig.group.nodeIds) {
+                const el = document.getElementById(nodeId);
+                if (el) {
+                  if (instance.getGroup(x.key)) {
+                    instance.addToGroup(x.key, el);
+                  }
+                }
+              }
+            } else {
+              instance.removeGroup(x.key);
+            }
           }
         }
       });
@@ -370,23 +401,6 @@ export const useJsPlumb = (
   }, [connections, instance]);
 
   useEffect(() => {
-    if (!instance) return;
-
-    for (const group of Object.values(groups)) {
-      const uiGroup = addGroup(group.id);
-
-      if (uiGroup) {
-        for (const nodeId of group.nodeIds) {
-          const el = document.getElementById(nodeId);
-          if (el) {
-            instance.addToGroup(group.id, el);
-          }
-        }
-      }
-    }
-  }, [groups, instance]);
-
-  useEffect(() => {
     const jsPlumbInstance: BrowserJsPlumbInstance = newInstance({
       ...defaultOptions,
       container: containerRef.current
@@ -423,16 +437,13 @@ export const useJsPlumb = (
 
     jsPlumbInstance.bind(
       EVENT_CONNECTION_DETACHED,
-      function (
-        this: BrowserJsPlumbInstance,
-        params: ConnectionDetachedParams
-      ) {
+      function (params: ConnectionDetachedParams) {
         onConnectionDetached([params.sourceId, params.targetId]);
 
         onGraphUpdate({
           nodes: stateRef.current,
           connections: getConnections(
-            this.getConnections({}, true) as Connection[]
+            jsPlumbInstance.getConnections({}, true) as Connection[]
           )
         });
       }
@@ -440,24 +451,21 @@ export const useJsPlumb = (
 
     jsPlumbInstance.bind(
       EVENT_CONNECTION,
-      function (
-        this: BrowserJsPlumbInstance,
-        params: ConnectionEstablishedParams
-      ) {
+      function (params: ConnectionEstablishedParams) {
         if (
           !Object.prototype.hasOwnProperty.call(
             params.connection.overlays,
             "remove-conn"
           )
         ) {
-          params.connection.addOverlay(getOverlayObject(this));
+          params.connection.addOverlay(getOverlayObject(jsPlumbInstance));
           onConnectionAttached([params.sourceId, params.targetId]);
         }
 
         onGraphUpdate({
           nodes: stateRef.current,
           connections: getConnections(
-            this.getConnections({}, true) as Connection[]
+            jsPlumbInstance.getConnections({}, true) as Connection[]
           )
         });
       }
@@ -481,6 +489,60 @@ export const useJsPlumb = (
         jsPlumbInstance.deleteConnection(connection);
       }
     );
+
+    jsPlumbInstance.bind(EVENT_GROUP_MEMBER_REMOVED, (data: any) => {
+      eventBus.dispatch("EVENT_GROUP_MEMBER_REMOVED", {
+        message: {
+          data: {
+            groupId: data.group.id,
+            nodeId: data.el.id
+          }
+        }
+      });
+    });
+
+    jsPlumbInstance.bind(EVENT_GROUP_MEMBER_ADDED, (data: any) => {
+      eventBus.dispatch("EVENT_GROUP_MEMBER_ADDED", {
+        message: {
+          data: {
+            groupId: data.group.id,
+            nodeId: data.el.id
+          }
+        }
+      });
+    });
+
+    jsPlumbInstance.bind(EVENT_GROUP_REMOVED, (data: any) => {
+      eventBus.dispatch("EVENT_GROUP_REMOVED", {
+        message: {
+          data: {
+            groupId: data.group.id
+          }
+        }
+      });
+    });
+
+    jsPlumbInstance.bind(EVENT_NESTED_GROUP_ADDED, (data: any) => {
+      eventBus.dispatch("EVENT_NESTED_GROUP_ADDED", {
+        message: {
+          data: {
+            parent: data.parent.id,
+            child: data.child.id
+          }
+        }
+      });
+    });
+
+    jsPlumbInstance.bind(EVENT_NESTED_GROUP_REMOVED, (data: any) => {
+      eventBus.dispatch("EVENT_NESTED_GROUP_REMOVED", {
+        message: {
+          data: {
+            parent: data.parent.id,
+            child: data.child.id
+          }
+        }
+      });
+    });
 
     setInstance(jsPlumbInstance);
 

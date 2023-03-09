@@ -6,7 +6,7 @@ import {
   CallbackFunction,
   ITemplateNodeItem,
   INodeItem,
-  IGroup
+  IGroupNodeItem
 } from "../../types";
 import TemplateNode from "./TemplateNode";
 import { IJsPlumb } from "./useJsPlumb";
@@ -24,7 +24,6 @@ export interface ICanvasProps {
   setNodeToDelete: CallbackFunction;
   selectedNodes: Record<string, any>;
 
-  groups: Record<string, IGroup>;
   jsPlumb: IJsPlumb;
 }
 
@@ -39,8 +38,7 @@ export const Canvas: FunctionComponent<ICanvasProps> = (
     setTemplateToEdit,
     setNodeToDelete,
     selectedNodes,
-    jsPlumb,
-    groups
+    jsPlumb
   } = props;
 
   const [dragging, setDragging] = useState(false);
@@ -185,11 +183,12 @@ export const Canvas: FunctionComponent<ICanvasProps> = (
                   />
                 );
               }
-            })}
 
-            {Object.values(groups).map((group) => (
-              <Group key={group.id} group={group} />
-            ))}
+              if (x.type === "GROUP") {
+                x = x as IGroupNodeItem;
+                return <Group key={x.key} group={x} />;
+              }
+            })}
           </div>
         </div>
       )}

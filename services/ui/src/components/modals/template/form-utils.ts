@@ -1,4 +1,8 @@
-import type { IEditTemplateForm, ITemplateNodeItem } from "../../../types";
+import type {
+  IEditTemplateForm,
+  IGroupNodeItem,
+  ITemplateNodeItem
+} from "../../../types";
 import * as yup from "yup";
 import { pruneArray, pruneObject, pruneString } from "../../../utils/forms";
 
@@ -197,7 +201,30 @@ export const getInitialValues = (node?: ITemplateNodeItem) => {
   };
 };
 
-export const getFinalValues = (
+export const getGroupNodeValues = (values: IGroupNodeItem): IGroupNodeItem => {
+  const { nodeConfig } = values;
+
+  const base: IGroupNodeItem = {
+    key: values?.key ?? "group",
+    position: values?.position ?? { left: 0, top: 0 },
+    inputs: values?.inputs ?? ["op_source"],
+    outputs: values?.outputs ?? [],
+    type: "GROUP",
+    nodeConfig: {
+      metaData: {
+        type: nodeConfig.metaData.type
+      },
+      group: {
+        name: values?.nodeConfig?.group?.name ?? "group",
+        nodeIds: values?.nodeConfig?.group?.nodeIds ?? []
+      }
+    }
+  };
+
+  return base;
+};
+
+export const getTemplateNodeFinalValues = (
   values: IEditTemplateForm,
   previous?: ITemplateNodeItem
 ): ITemplateNodeItem => {
