@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Dictionary, omit } from "lodash";
-import { PlusIcon } from "@heroicons/react/20/solid";
+import { PlusIcon, CubeIcon } from "@heroicons/react/20/solid";
 import { ITemplateNodeItem, INodeItem, IClientNodePosition } from "../../types";
 import eventBus from "../../events/eventBus";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
@@ -9,7 +9,8 @@ import {
   getClientNodeItem,
   flattenLibraries,
   ensure,
-  getMatchingSetIndex
+  getMatchingSetIndex,
+  attachUUID
 } from "../../utils";
 import { Canvas } from "../Canvas";
 import ModalConfirmDelete from "../modals/ConfirmDelete";
@@ -18,6 +19,8 @@ import ModalTemplateEdit from "../modals/template/Edit";
 import { useTitle } from "../../hooks";
 import CodeBox from "./CodeBox";
 import Header from "./Header";
+import { useJsPlumb } from "../Canvas/useJsPlumb";
+import { getGroupNodeValues } from "../modals/template/form-utils";
 
 export default function Project() {
   const { height } = useWindowDimensions();
@@ -69,28 +72,34 @@ export default function Project() {
   };
 
   const onAddEndpoint = (values: any) => {
-    const sections = flattenLibraries(nodeLibraries);
-    const clientNodeItem = getClientNodeItem(
-      values,
-      ensure(sections.find((l) => l.type === values.type))
-    );
+    if (stateNodesRef.current) {
+      const sections = flattenLibraries(nodeLibraries);
+      const clientNodeItem = getClientNodeItem(
+        values,
+        ensure(sections.find((l) => l.type === values.type))
+      );
 
-    clientNodeItem.position = {
-      left: 60 - canvasPosition.left,
-      top: 30 - canvasPosition.top
-    };
+      clientNodeItem.position = {
+        left: 60 - canvasPosition.left,
+        top: 30 - canvasPosition.top
+      };
 
-    setNodes({ ...nodes, [clientNodeItem.key]: clientNodeItem });
+      setNodes({
+        ...stateNodesRef.current,
+        [clientNodeItem.key]: clientNodeItem
+      });
 
-    if (clientNodeItem.type === "TEMPLATE") {
-      setTemplateToEdit(clientNodeItem as ITemplateNodeItem);
+      if (clientNodeItem.type === "TEMPLATE") {
+        setTemplateToEdit(clientNodeItem as ITemplateNodeItem);
+        setShowModalCreateTemplate(false);
+      }
     }
-
-    setShowModalCreateTemplate(false);
   };
 
   const onUpdateEndpoint = (nodeItem: ITemplateNodeItem) => {
-    setNodes({ ...nodes, [nodeItem.key]: nodeItem });
+    if (stateNodesRef.current) {
+      setNodes({ ...stateNodesRef.current, [nodeItem.key]: nodeItem });
+    }
   };
 
   const onConnectionDetached = (data: any) => {
@@ -129,8 +138,10 @@ export default function Project() {
   };
 
   const onRemoveEndpoint = (node: INodeItem) => {
-    setNodes({ ...omit(nodes, node.key) });
-    eventBus.dispatch("NODE_DELETED", { message: { node: node } });
+    if (stateNodesRef.current) {
+      setNodes({ ...omit(stateNodesRef.current, node.key) });
+      eventBus.dispatch("NODE_DELETED", { message: { node: node } });
+    }
   };
 
   const onNodeSelect = (data: any) => {
@@ -141,17 +152,125 @@ export default function Project() {
     }
   };
 
-  const createGroup = () => {
-    console.log(selectedNodes);
+  const onGroupMemberAdded = (message: any) => {
+    if (stateNodesRef.current) {
+      const data = message.message.data;
+      const group = stateNodesRef.current[data.groupId];
+
+      if (!group.nodeConfig.group.nodeIds.includes(data.nodeId)) {
+        group.nodeConfig.group.nodeIds.push(data.nodeId);
+      }
+
+      setNodes({ ...stateNodesRef.current, [data.groupId]: group });
+    }
   };
+
+  const onGroupMemberRemoved = (message: any) => {
+    if (stateNodesRef.current) {
+      const data = message.message.data;
+      const group = stateNodesRef.current[data.groupId];
+
+      group.nodeConfig.group.nodeIds = group.nodeConfig.group.nodeIds.filter(
+        (x: any) => x !== data.nodeId
+      );
+
+      setNodes({ ...stateNodesRef.current, [data.groupId]: group });
+    }
+  };
+
+  const onNestedGroupAdded = (message: any) => {
+    return;
+  };
+
+  const onNestedGroupRemoved = (message: any) => {
+    if (stateNodesRef.current) {
+      const data = message.message.data;
+      const parentGroup = stateNodesRef.current[data.parent];
+
+      parentGroup.nodeConfig.group.nodeIds =
+        parentGroup.nodeConfig.group.nodeIds.filter(
+          (x: any) => x !== data.child
+        );
+
+      setNodes({ ...stateNodesRef.current, [data.parent]: parentGroup });
+    }
+  };
+
+  const onGroupRemoved = (message: any) => {
+    if (stateNodesRef.current) {
+      const data = message.message.data;
+      const updated = { ...stateNodesRef.current };
+      delete updated[data.groupId];
+      setNodes(updated);
+    }
+  };
+
+  const jsPlumb = useJsPlumb(
+    nodes,
+    connections,
+    onGraphUpdate,
+    onNodeUpdate,
+    onConnectionAttached,
+    onConnectionDetached
+  );
+
+  const handleCreateGroup = useCallback(() => {
+    const values = getGroupNodeValues({
+      key: attachUUID("group"),
+      position: { left: 50, top: 50 },
+      inputs: ["op_source"],
+      outputs: [],
+      type: "GROUP",
+      nodeConfig: {
+        metaData: {
+          type: "GROUP"
+        },
+        group: {
+          name: "new group",
+          nodeIds: Object.keys(selectedNodes).filter((x: any) => {
+            if (x.includes("template")) {
+              return x;
+            }
+          })
+        }
+      }
+    });
+
+    onAddEndpoint(values);
+  }, [selectedNodes]);
 
   useEffect(() => {
     eventBus.on("EVENT_ELEMENT_CLICK", (data: any) => {
       onNodeSelect(data.detail);
     });
 
+    eventBus.on("EVENT_GROUP_MEMBER_ADDED", (data: any) => {
+      onGroupMemberAdded(data.detail);
+    });
+
+    eventBus.on("EVENT_GROUP_MEMBER_REMOVED", (data: any) => {
+      onGroupMemberRemoved(data.detail);
+    });
+
+    eventBus.on("EVENT_NESTED_GROUP_ADDED", (data: any) => {
+      onNestedGroupAdded(data.detail);
+    });
+
+    eventBus.on("EVENT_NESTED_GROUP_REMOVED", (data: any) => {
+      onNestedGroupRemoved(data.detail);
+    });
+
+    eventBus.on("GROUP_REMOVED", (data: any) => {
+      onGroupRemoved(data.detail);
+    });
+
     return () => {
+      eventBus.remove("GROUP_REMOVED", () => undefined);
       eventBus.remove("EVENT_ELEMENT_CLICK", () => undefined);
+      eventBus.remove("EVENT_GROUP_MEMBER_ADDED", () => undefined);
+      eventBus.remove("EVENT_GROUP_MEMBER_REMOVED", () => undefined);
+      eventBus.remove("EVENT_NESTED_GROUP_ADDED", () => undefined);
+      eventBus.remove("EVENT_NESTED_GROUP_REMOVED", () => undefined);
     };
   }, []);
 
@@ -197,9 +316,9 @@ export default function Project() {
                     <button
                       className="flex space-x-1 btn-util"
                       type="button"
-                      onClick={() => createGroup()}
+                      onClick={handleCreateGroup}
                     >
-                      <PlusIcon className="w-4" />
+                      <CubeIcon className="w-4" />
                       <span>Group selected</span>
                     </button>
                   )}
@@ -215,19 +334,11 @@ export default function Project() {
               </div>
 
               <Canvas
+                jsPlumb={jsPlumb}
                 nodes={nodes}
-                connections={connections}
                 canvasPosition={canvasPosition}
-                onNodeUpdate={(node: IClientNodePosition) => onNodeUpdate(node)}
-                onGraphUpdate={(graphData: any) => onGraphUpdate(graphData)}
                 onCanvasUpdate={(canvasData: any) => onCanvasUpdate(canvasData)}
                 onCanvasClick={() => onCanvasClick()}
-                onConnectionAttached={(connectionData: any) =>
-                  onConnectionAttached(connectionData)
-                }
-                onConnectionDetached={(connectionData: any) =>
-                  onConnectionDetached(connectionData)
-                }
                 setTemplateToEdit={(node: ITemplateNodeItem) =>
                   setTemplateToEdit(node)
                 }

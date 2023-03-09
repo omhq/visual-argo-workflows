@@ -55,7 +55,10 @@ export interface ITemplateNodeItem extends INodeItem {
 
 export interface IGroupNodeItem extends INodeItem {
   nodeConfig: {
-    order: any;
+    metaData: {
+      type: string;
+    };
+    group: Partial<IGroup>;
   };
 }
 
@@ -277,3 +280,8 @@ export type TFinalFormField =
   | IToggleField
   | IRecordsField<TFinalFormField>
   | IAccordionField;
+
+export interface IGroup {
+  name: string;
+  nodeIds: string[];
+}
