@@ -1,18 +1,20 @@
-import { useEffect, useState } from "react";
-import { truncateStr } from "../../utils";
-import { ITemplateNodeItem, CallbackFunction } from "../../types";
-import eventBus from "../../events/eventBus";
-import { Popover } from "./Popover";
-import NodeIcon from "./NodeIcon";
+import { FunctionComponent, ReactElement, useEffect, useState } from "react";
+import { truncateStr } from "../../../utils";
+import { ITemplateNode, CallbackFunction } from "../../../types";
+import eventBus from "../../../events/eventBus";
+import { Popover } from "../Popover";
+import NodeIcon from "../NodeIcon";
 
-interface INodeProps {
-  node: ITemplateNodeItem;
+interface ITemplateNodeProps {
+  node: ITemplateNode;
   setTemplateToEdit: CallbackFunction;
   setNodeToDelete: CallableFunction;
   selected: boolean;
 }
 
-export default function TemplateNode(props: INodeProps) {
+const TemplateNode: FunctionComponent<ITemplateNodeProps> = (
+  props: ITemplateNodeProps
+): ReactElement => {
   const { node, setTemplateToEdit, setNodeToDelete, selected } = props;
   const [nodeDragging, setNodeDragging] = useState<string | null>();
   const [nodeHovering, setNodeHovering] = useState<string | null>();
@@ -71,9 +73,9 @@ export default function TemplateNode(props: INodeProps) {
       )}
       <div className="relative node-label w-full py-2 px-4">
         <>
-          {node.nodeConfig.template.name && (
+          {node.data.template.name && (
             <div className="text-sm font-semibold overflow-x-hidden">
-              {truncateStr(node.nodeConfig.template.name, 12)}
+              {truncateStr(node.data.template.name, 12)}
             </div>
           )}
 
@@ -82,4 +84,6 @@ export default function TemplateNode(props: INodeProps) {
       </div>
     </div>
   );
-}
+};
+
+export default TemplateNode;

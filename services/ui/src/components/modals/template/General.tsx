@@ -20,8 +20,8 @@ const General = () => {
       <div className="grid grid-cols-3 gap-4">
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.name"}
-            name={"nodeConfig.template.name"}
+            id={"data.template.name"}
+            name={"data.template.name"}
             placeholder={"template name"}
             label={"Name"}
             required={true}
@@ -37,10 +37,10 @@ const General = () => {
           </label>
           <div className="mt-1">
             <select
-              id={"nodeConfig.metaData.type"}
-              name={"nodeConfig.metaData.type"}
+              id={"data.type"}
+              name={"data.type"}
               className="input-util mb-2 sm:mb-0"
-              value={formik.values.nodeConfig.metaData.type}
+              value={formik.values.data.type}
               onChange={formik.handleChange}
             >
               <option value="">Select type</option>

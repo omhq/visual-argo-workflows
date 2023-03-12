@@ -23,5 +23,19 @@ export const nodeLibraries: INodeGroup[] = [
         isActive: true
       }
     ]
+  },
+  {
+    id: 2,
+    name: NodeGroupType.Controls,
+    nodeTypes: [
+      {
+        id: 1,
+        name: "entrypoint",
+        type: "ENTRYPOINT",
+        noInputs: 0,
+        noOutputs: 1,
+        isActive: true
+      }
+    ]
   }
 ];

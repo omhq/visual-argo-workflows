@@ -16,8 +16,8 @@ const Container = () => {
       <div className="grid grid-cols-3 gap-4">
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.container.name"}
-            name={"nodeConfig.template.container.name"}
+            id={"data.template.container.name"}
+            name={"data.template.container.name"}
             placeholder={""}
             label={"Name of the container specified as a DNS_LABEL"}
             required={false}
@@ -26,8 +26,8 @@ const Container = () => {
 
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.container.image"}
-            name={"nodeConfig.template.container.image"}
+            id={"data.template.container.image"}
+            name={"data.template.container.image"}
             placeholder={"docker/whalesay"}
             label={"Image"}
             required={true}
@@ -36,8 +36,8 @@ const Container = () => {
 
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.container.command"}
-            name={"nodeConfig.template.container.command"}
+            id={"data.template.container.command"}
+            name={"data.template.container.command"}
             placeholder={"cowsay"}
             label={"Command"}
             required={false}
@@ -46,8 +46,8 @@ const Container = () => {
 
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.container.args"}
-            name={"nodeConfig.template.container.args"}
+            id={"data.template.container.args"}
+            name={"data.template.container.args"}
             placeholder={"hello world"}
             label={"Args"}
             required={false}
@@ -56,8 +56,8 @@ const Container = () => {
 
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.container.imagePullPolicy"}
-            name={"nodeConfig.template.container.imagePullPolicy"}
+            id={"data.template.container.imagePullPolicy"}
+            name={"data.template.container.imagePullPolicy"}
             placeholder={"Always, Never, IfNotPresent"}
             label={"Image pull policy"}
             required={false}

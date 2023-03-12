@@ -1,4 +1,11 @@
 export enum NodeGroupType {
   Dag = "dag",
-  Steps = "steps"
+  Steps = "steps",
+  Controls = "controls"
+}
+
+export enum NodeTypes {
+  TEMPLATE = "TEMPLATE",
+  GROUP = "GROUP",
+  ENTRYPOINT = "ENTRYPOINT"
 }

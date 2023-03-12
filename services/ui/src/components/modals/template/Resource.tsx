@@ -20,8 +20,8 @@ const Resource = () => {
       <div className="grid grid-cols-3 gap-4">
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.resource.action"}
-            name={"nodeConfig.template.resource.action"}
+            id={"data.template.resource.action"}
+            name={"data.template.resource.action"}
             placeholder={"eg. create, update, or delete"}
             label={"Resource action"}
             required={true}
@@ -40,8 +40,8 @@ const Resource = () => {
             rows={2}
             className="input-util"
             placeholder=""
-            name={`nodeConfig.template.resource.manifest`}
-            value={formik.values.nodeConfig.template.resource?.manifest}
+            name={`data.template.resource.manifest`}
+            value={formik.values.data.template.resource?.manifest}
             onChange={formik.handleChange}
           ></textarea>
         </div>

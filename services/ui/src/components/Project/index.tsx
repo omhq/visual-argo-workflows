@@ -1,7 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Dictionary, omit } from "lodash";
 import { PlusIcon, CubeIcon } from "@heroicons/react/20/solid";
-import { ITemplateNodeItem, INodeItem, IClientNodePosition } from "../../types";
+import {
+  ITemplateNode,
+  INodeItem,
+  IClientNodePosition,
+  IEntryPointNode
+} from "../../types";
 import eventBus from "../../events/eventBus";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { nodeLibraries } from "../../utils/data/libraries";
@@ -28,8 +33,9 @@ export default function Project() {
   const stateSelectedNodesRef = useRef<Record<string, any>>();
   const stateConnectionsRef = useRef<[[string, string]] | []>();
   const [showModalCreateTemplate, setShowModalCreateTemplate] = useState(false);
-  const [templateToEdit, setTemplateToEdit] =
-    useState<ITemplateNodeItem | null>(null);
+  const [templateToEdit, setTemplateToEdit] = useState<ITemplateNode | null>(
+    null
+  );
   const [nodeToDelete, setNodeToDelete] = useState<INodeItem | null>(null);
   const [selectedNodes, setSelectedNodes] = useState<Record<string, any>>({});
   const [nodes, setNodes] = useState<Record<string, INodeItem>>({});
@@ -90,13 +96,13 @@ export default function Project() {
       });
 
       if (clientNodeItem.type === "TEMPLATE") {
-        setTemplateToEdit(clientNodeItem as ITemplateNodeItem);
+        //setTemplateToEdit(clientNodeItem as ITemplateNode);
         setShowModalCreateTemplate(false);
       }
     }
   };
 
-  const onUpdateEndpoint = (nodeItem: ITemplateNodeItem) => {
+  const onUpdateEndpoint = (nodeItem: ITemplateNode) => {
     if (stateNodesRef.current) {
       setNodes({ ...stateNodesRef.current, [nodeItem.key]: nodeItem });
     }
@@ -145,7 +151,10 @@ export default function Project() {
   };
 
   const onNodeSelect = (data: any) => {
-    if (stateSelectedNodesRef.current) {
+    if (
+      stateSelectedNodesRef.current &&
+      !data.message.id.includes("entrypoint")
+    ) {
       const selectedNodesNew = { ...stateSelectedNodesRef.current };
       selectedNodesNew[data.message.id] = {};
       setSelectedNodes(selectedNodesNew);
@@ -157,8 +166,8 @@ export default function Project() {
       const data = message.message.data;
       const group = stateNodesRef.current[data.groupId];
 
-      if (!group.nodeConfig.group.nodeIds.includes(data.nodeId)) {
-        group.nodeConfig.group.nodeIds.push(data.nodeId);
+      if (!group.data.group.nodeIds.includes(data.nodeId)) {
+        group.data.group.nodeIds.push(data.nodeId);
       }
 
       setNodes({ ...stateNodesRef.current, [data.groupId]: group });
@@ -170,7 +179,7 @@ export default function Project() {
       const data = message.message.data;
       const group = stateNodesRef.current[data.groupId];
 
-      group.nodeConfig.group.nodeIds = group.nodeConfig.group.nodeIds.filter(
+      group.data.group.nodeIds = group.data.group.nodeIds.filter(
         (x: any) => x !== data.nodeId
       );
 
@@ -187,10 +196,9 @@ export default function Project() {
       const data = message.message.data;
       const parentGroup = stateNodesRef.current[data.parent];
 
-      parentGroup.nodeConfig.group.nodeIds =
-        parentGroup.nodeConfig.group.nodeIds.filter(
-          (x: any) => x !== data.child
-        );
+      parentGroup.data.group.nodeIds = parentGroup.data.group.nodeIds.filter(
+        (x: any) => x !== data.child
+      );
 
       setNodes({ ...stateNodesRef.current, [data.parent]: parentGroup });
     }
@@ -221,10 +229,7 @@ export default function Project() {
       inputs: ["op_source"],
       outputs: [],
       type: "GROUP",
-      nodeConfig: {
-        metaData: {
-          type: "GROUP"
-        },
+      data: {
         group: {
           name: "new group",
           nodeIds: Object.keys(selectedNodes).filter((x: any) => {
@@ -233,6 +238,9 @@ export default function Project() {
             }
           })
         }
+      },
+      configs: {
+        name: "new group"
       }
     });
 
@@ -240,6 +248,20 @@ export default function Project() {
   }, [selectedNodes]);
 
   useEffect(() => {
+    const entryPointNode: IEntryPointNode = {
+      key: attachUUID("entrypoint"),
+      position: { left: 60, top: 60 },
+      outputs: ["op_source"],
+      type: "ENTRYPOINT",
+      configs: {
+        name: "entrypoint"
+      },
+      inputs: [],
+      data: undefined
+    };
+
+    onAddEndpoint(entryPointNode);
+
     eventBus.on("EVENT_ELEMENT_CLICK", (data: any) => {
       onNodeSelect(data.detail);
     });
@@ -339,12 +361,10 @@ export default function Project() {
                 canvasPosition={canvasPosition}
                 onCanvasUpdate={(canvasData: any) => onCanvasUpdate(canvasData)}
                 onCanvasClick={() => onCanvasClick()}
-                setTemplateToEdit={(node: ITemplateNodeItem) =>
+                setTemplateToEdit={(node: ITemplateNode) =>
                   setTemplateToEdit(node)
                 }
-                setNodeToDelete={(node: ITemplateNodeItem) =>
-                  setNodeToDelete(node)
-                }
+                setNodeToDelete={(node: ITemplateNode) => setNodeToDelete(node)}
                 selectedNodes={selectedNodes}
               />
             </div>

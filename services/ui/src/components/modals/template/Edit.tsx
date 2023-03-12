@@ -11,12 +11,12 @@ import {
   validationSchema,
   getTemplateNodeFinalValues
 } from "./form-utils";
-import { ITemplateNodeItem } from "../../../types";
+import { ITemplateNode } from "../../../types";
 import { reportErrorsAndSubmit } from "../../../utils/forms";
 import Tabs from "./Tabs";
 
 interface IModalProps {
-  node: ITemplateNodeItem;
+  node: ITemplateNode;
   onHide: any;
   onUpdateEndpoint: any;
 }

@@ -1,13 +1,13 @@
 import type {
   IEditTemplateForm,
-  IGroupNodeItem,
-  ITemplateNodeItem
+  IGroupNode,
+  ITemplateNode
 } from "../../../types";
 import * as yup from "yup";
 import { pruneArray, pruneObject, pruneString } from "../../../utils/forms";
 
 export const resourceValidationSchema = yup.object({
-  nodeConfig: yup.object({
+  data: yup.object({
     template: yup.object({
       resource: yup.object({
         action: yup
@@ -21,7 +21,7 @@ export const resourceValidationSchema = yup.object({
 });
 
 export const containerValidationSchema = yup.object({
-  nodeConfig: yup.object({
+  data: yup.object({
     template: yup.object({
       container: yup.object({
         image: yup
@@ -34,7 +34,7 @@ export const containerValidationSchema = yup.object({
 });
 
 export const scriptValidationSchema = yup.object({
-  nodeConfig: yup.object({
+  data: yup.object({
     template: yup.object({
       script: yup.object({
         image: yup
@@ -47,7 +47,7 @@ export const scriptValidationSchema = yup.object({
 });
 
 export const suspendValidationSchema = yup.object({
-  nodeConfig: yup.object({
+  data: yup.object({
     template: yup.object({
       suspend: yup.object({
         duration: yup
@@ -61,7 +61,7 @@ export const suspendValidationSchema = yup.object({
 
 export const validationSchema = yup
   .object({
-    nodeConfig: yup.object({
+    data: yup.object({
       template: yup.object({
         name: yup
           .string()
@@ -71,28 +71,26 @@ export const validationSchema = yup
     })
   })
   .when((values, schema) => {
-    if (values.nodeConfig.metaData.type === "resource") {
+    if (values.data.type === "resource") {
       return schema.concat(resourceValidationSchema);
     }
 
-    if (values.nodeConfig.metaData.type === "container") {
+    if (values.data.type === "container") {
       return schema.concat(containerValidationSchema);
     }
 
-    if (values.nodeConfig.metaData.type === "script") {
+    if (values.data.type === "script") {
       return schema.concat(scriptValidationSchema);
     }
 
-    if (values.nodeConfig.metaData.type === "suspend") {
+    if (values.data.type === "suspend") {
       return schema.concat(suspendValidationSchema);
     }
   });
 
 const initialValues: IEditTemplateForm = {
-  nodeConfig: {
-    metaData: {
-      type: ""
-    },
+  data: {
+    type: "",
     template: {
       name: "Untitled",
       container: {
@@ -121,79 +119,70 @@ const initialValues: IEditTemplateForm = {
   }
 };
 
-export const getInitialValues = (node?: ITemplateNodeItem) => {
+export const getInitialValues = (node?: ITemplateNode) => {
   if (!node) {
     return {
       ...initialValues
     };
   }
 
-  const { nodeConfig } = node;
+  const { data } = node;
 
   return {
-    nodeConfig: {
-      metaData: {
-        type: nodeConfig.metaData.type ?? ""
-      },
+    data: {
+      type: data.type ?? "",
       template: {
-        name:
-          nodeConfig.template.name ?? initialValues.nodeConfig.template.name,
+        name: data.template.name ?? initialValues.data.template.name,
         container: {
-          name: nodeConfig.template.container
-            ? nodeConfig.template.container.name ?? ""
+          name: data.template.container
+            ? data.template.container.name ?? ""
             : "",
-          image: nodeConfig.template.container
-            ? nodeConfig.template.container.image ?? ""
+          image: data.template.container
+            ? data.template.container.image ?? ""
             : "",
-          command: nodeConfig.template.container
-            ? nodeConfig.template.container.command
-              ? nodeConfig.template.container.command.join(" ")
+          command: data.template.container
+            ? data.template.container.command
+              ? data.template.container.command.join(" ")
               : ""
             : "",
-          args: nodeConfig.template.container
-            ? nodeConfig.template.container.args
-              ? nodeConfig.template.container.args.join(" ")
+          args: data.template.container
+            ? data.template.container.args
+              ? data.template.container.args.join(" ")
               : ""
             : "",
-          imagePullPolicy: nodeConfig.template.container
-            ? nodeConfig.template.container.imagePullPolicy ?? ""
+          imagePullPolicy: data.template.container
+            ? data.template.container.imagePullPolicy ?? ""
             : ""
         },
         script: {
-          name: nodeConfig.template.script
-            ? nodeConfig.template.script.name ?? ""
-            : "",
-          image: nodeConfig.template.script
-            ? nodeConfig.template.script.image ?? ""
-            : "",
-          command: nodeConfig.template.script
-            ? nodeConfig.template.script.command
-              ? nodeConfig.template.script.command.join(" ")
+          name: data.template.script ? data.template.script.name ?? "" : "",
+          image: data.template.script ? data.template.script.image ?? "" : "",
+          command: data.template.script
+            ? data.template.script.command
+              ? data.template.script.command.join(" ")
               : ""
             : "",
-          args: nodeConfig.template.script
-            ? nodeConfig.template.script.args
-              ? nodeConfig.template.script.args.join(" ")
+          args: data.template.script
+            ? data.template.script.args
+              ? data.template.script.args.join(" ")
               : ""
             : "",
-          imagePullPolicy: nodeConfig.template.script
-            ? nodeConfig.template.script.imagePullPolicy ?? ""
+          imagePullPolicy: data.template.script
+            ? data.template.script.imagePullPolicy ?? ""
             : "",
-          source: nodeConfig.template.script
-            ? nodeConfig.template.script.source ?? ""
-            : ""
+          source: data.template.script ? data.template.script.source ?? "" : ""
         },
         resource: {
-          action: nodeConfig.template.resource
-            ? nodeConfig.template.resource.action ?? ""
+          action: data.template.resource
+            ? data.template.resource.action ?? ""
             : "",
-          manifest: nodeConfig.template.resource
-            ? nodeConfig.template.resource.manifest ?? ""
+          manifest: data.template.resource
+            ? data.template.resource.manifest ?? ""
             : ""
         },
         suspend: {
-          duration: nodeConfig.template.suspend
-            ? nodeConfig.template.suspend.duration ?? ""
+          duration: data.template.suspend
+            ? data.template.suspend.duration ?? ""
             : ""
         }
       }
@@ -201,22 +190,20 @@ export const getInitialValues = (node?: ITemplateNodeItem) => {
   };
 };
 
-export const getGroupNodeValues = (values: IGroupNodeItem): IGroupNodeItem => {
-  const { nodeConfig } = values;
-
-  const base: IGroupNodeItem = {
+export const getGroupNodeValues = (values: IGroupNode): IGroupNode => {
+  const base: IGroupNode = {
     key: values?.key ?? "group",
     position: values?.position ?? { left: 0, top: 0 },
     inputs: values?.inputs ?? ["op_source"],
     outputs: values?.outputs ?? [],
     type: "GROUP",
-    nodeConfig: {
-      metaData: {
-        type: nodeConfig.metaData.type
-      },
+    configs: {
+      name: values?.configs?.name ?? "Untitled"
+    },
+    data: {
       group: {
-        name: values?.nodeConfig?.group?.name ?? "group",
-        nodeIds: values?.nodeConfig?.group?.nodeIds ?? []
+        name: values?.data?.group?.name ?? "group",
+        nodeIds: values?.data?.group?.nodeIds ?? []
       }
     }
   };
@@ -226,72 +213,69 @@ export const getGroupNodeValues = (values: IGroupNodeItem): IGroupNodeItem => {
 
 export const getTemplateNodeFinalValues = (
   values: IEditTemplateForm,
-  previous?: ITemplateNodeItem
-): ITemplateNodeItem => {
-  const { nodeConfig } = values;
+  previous?: ITemplateNode
+): ITemplateNode => {
+  const { data } = values;
 
-  const base: ITemplateNodeItem = {
+  const base: ITemplateNode = {
     key: previous?.key ?? "template",
     position: previous?.position ?? { left: 0, top: 0 },
     inputs: previous?.inputs ?? ["op_source"],
     outputs: previous?.outputs ?? [],
     type: "TEMPLATE",
-    nodeConfig: {
-      metaData: {
-        type: nodeConfig.metaData.type
-      },
+    configs: {
+      name: data.template.name
+    },
+    data: {
+      type: data.type,
       template: {
-        name: nodeConfig.template.name
+        name: data.template.name
       }
     }
   };
 
-  if (nodeConfig.template.container) {
-    base.nodeConfig.template = {
-      ...base.nodeConfig.template,
+  if (data.template.container) {
+    base.data.template = {
+      ...base.data.template,
       container: pruneObject({
-        name: pruneString(nodeConfig.template.container.name),
-        image: nodeConfig.template.container.image,
-        command: pruneArray(nodeConfig.template.container.command.split(" ")),
-        args: pruneArray(nodeConfig.template.container.args.split(" ")),
-        imagePullPolicy: pruneString(
-          nodeConfig.template.container.imagePullPolicy
-        )
+        name: pruneString(data.template.container.name),
+        image: data.template.container.image,
+        command: pruneArray(data.template.container.command.split(" ")),
+        args: pruneArray(data.template.container.args.split(" ")),
+        imagePullPolicy: pruneString(data.template.container.imagePullPolicy)
       })
     };
   }
 
-  if (nodeConfig.template.script) {
-    base.nodeConfig.template = {
-      ...base.nodeConfig.template,
+  if (data.template.script) {
+    base.data.template = {
+      ...base.data.template,
       script: pruneObject({
-        name: pruneString(nodeConfig.template.script.name),
-        image: nodeConfig.template.script.image,
-        command: pruneArray(nodeConfig.template.script.command.split(" ")),
-        args: pruneArray(nodeConfig.template.script.args.split(" ")),
-        imagePullPolicy: pruneString(
-          nodeConfig.template.script.imagePullPolicy
-        ),
-        source: pruneString(nodeConfig.template.script.source)
+        name: pruneString(data.template.script.name),
+        image: data.template.script.image,
+        command: pruneArray(data.template.script.command.split(" ")),
+        args: pruneArray(data.template.script.args.split(" ")),
+        imagePullPolicy: pruneString(data.template.script.imagePullPolicy),
+        source: pruneString(data.template.script.source)
       })
     };
   }
 
-  if (nodeConfig.template.resource) {
-    base.nodeConfig.template = {
-      ...base.nodeConfig.template,
+  if (data.template.resource) {
+    base.data.template = {
+      ...base.data.template,
       resource: {
-        action: nodeConfig.template.resource.action,
-        manifest: nodeConfig.template.resource.manifest
+        action: data.template.resource.action,
+        manifest: data.template.resource.manifest
       }
     };
   }
 
-  if (nodeConfig.template.suspend) {
-    base.nodeConfig.template = {
-      ...base.nodeConfig.template,
+  if (data.template.suspend) {
+    base.data.template = {
+      ...base.data.template,
       suspend: {
-        duration: nodeConfig.template.suspend.duration
+        duration: data.template.suspend.duration
       }
     };
   }

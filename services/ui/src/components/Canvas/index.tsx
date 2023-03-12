@@ -4,13 +4,15 @@ import { v4 as uuidv4 } from "uuid";
 import eventBus from "../../events/eventBus";
 import {
   CallbackFunction,
-  ITemplateNodeItem,
+  ITemplateNode,
   INodeItem,
-  IGroupNodeItem
+  IGroupNode,
+  IEntryPointNode
 } from "../../types";
-import TemplateNode from "./TemplateNode";
+import TemplateNode from "./nodes/TemplateNode";
 import { IJsPlumb } from "./useJsPlumb";
-import { Group } from "./Group";
+import GroupNode from "./nodes/GroupNode";
+import EntryPointNode from "./nodes/EntryPointNode";
 
 const CANVAS_ID: string = "canvas-container-" + uuidv4();
 
@@ -172,7 +174,7 @@ export const Canvas: FunctionComponent<ICanvasProps> = (
           >
             {values(nodes).map((x) => {
               if (x.type === "TEMPLATE") {
-                x = x as ITemplateNodeItem;
+                x = x as ITemplateNode;
                 return (
                   <TemplateNode
                     key={x.key}
@@ -185,8 +187,13 @@ export const Canvas: FunctionComponent<ICanvasProps> = (
               }
 
               if (x.type === "GROUP") {
-                x = x as IGroupNodeItem;
-                return <Group key={x.key} group={x} />;
+                x = x as IGroupNode;
+                return <GroupNode key={x.key} group={x} />;
+              }
+
+              if (x.type === "ENTRYPOINT") {
+                x = x as IEntryPointNode;
+                return <EntryPointNode key={x.key} entrypoint={x} />;
               }
             })}
           </div>

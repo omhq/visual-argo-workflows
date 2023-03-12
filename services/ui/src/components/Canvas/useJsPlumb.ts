@@ -35,7 +35,7 @@ import {
 } from "../../utils/options";
 import eventBus from "../../events/eventBus";
 import { getConnections } from "../../utils";
-import { IGroup, INodeItem } from "../../types";
+import { INodeItem } from "../../types";
 import { Dictionary, isEqual } from "lodash";
 import { IAnchor, CallbackFunction } from "../../types";
 
@@ -44,7 +44,6 @@ export interface IJsPlumb {
   setZoom: (zoom: number) => void;
   setStyle: (style: any) => void;
   removeEndpoint: (node: INodeItem) => void;
-  addToGroup: (group: IGroup, el: any) => void;
 }
 
 export const useJsPlumb = (
@@ -117,12 +116,6 @@ export const useJsPlumb = (
     },
     [instance]
   );
-
-  const addToGroup = (group: IGroup, el: any) => {
-    if (!instanceRef.current) return;
-    const instance = instanceRef.current;
-    //instance.addToGroup(group.id, el);
-  };
 
   const addGroup = (groupId: string): UIGroup | void => {
     if (!instanceRef.current) return;
@@ -230,11 +223,27 @@ export const useJsPlumb = (
   const onbeforeDropIntercept = (
     instance: BrowserJsPlumbInstance,
     params: BeforeDropParams
-  ) => {
+  ): boolean => {
+    // entrypoint should only connect to a node
+    if (
+      params.sourceId.includes("entrypoint") &&
+      params.targetId.includes("group")
+    ) {
+      return false;
+    }
+
     const existingConnections: ConnectionSelection = instance.select({
       source: params.sourceId as any,
       target: params.targetId as any
     });
+
+    const targetExistingConnections: ConnectionSelection = instance.select({
+      target: params.targetId as any
+    });
+
+    if (targetExistingConnections.length) {
+      return false;
+    }
 
     // prevent duplicates when switching existing connections
     if (existingConnections.length > 1) {
@@ -259,7 +268,7 @@ export const useJsPlumb = (
             target: params.sourceId as any
           });
 
-          if (loopCheck.length > 0) {
+          if (loopCheck.length) {
             return false;
           } else {
             onConnectionAttached([params.sourceId, params.targetId]);
@@ -282,7 +291,8 @@ export const useJsPlumb = (
       source: params.targetId as any,
       target: params.sourceId as any
     });
-    if (loopCheck.length > 0) {
+
+    if (loopCheck.length) {
       return false;
     }
 
@@ -336,8 +346,8 @@ export const useJsPlumb = (
           const uiGroup = getOrCreateUIGroup(x.key);
 
           if (uiGroup) {
-            if (x.nodeConfig.group.nodeIds.length) {
-              for (const nodeId of x.nodeConfig.group.nodeIds) {
+            if (x.data.group.nodeIds.length) {
+              for (const nodeId of x.data.group.nodeIds) {
                 const el = document.getElementById(nodeId);
                 if (el) {
                   if (instance.getGroup(x.key)) {
@@ -374,15 +384,17 @@ export const useJsPlumb = (
 
     currentConnections.forEach((conn: Connection) => {
       const uuids = conn.getUuids();
-      uuids[0] = uuids[0].replace("op_", "");
-      uuids[1] = uuids[1].replace("ip_", "");
+      if (uuids[0] && uuids[1]) {
+        uuids[0] = uuids[0].replace("op_", "");
+        uuids[1] = uuids[1].replace("ip_", "");
 
-      const c = connections.find((y) => {
-        return isEqual([uuids[0], uuids[1]], y);
-      });
+        const c = connections.find((y) => {
+          return isEqual([uuids[0], uuids[1]], y);
+        });
 
-      if (!c) {
-        instance.deleteConnection(conn);
+        if (!c) {
+          instance.deleteConnection(conn);
+        }
       }
     });
 
@@ -460,6 +472,21 @@ export const useJsPlumb = (
         ) {
           params.connection.addOverlay(getOverlayObject(jsPlumbInstance));
           onConnectionAttached([params.sourceId, params.targetId]);
+        }
+
+        const sourceConnections: any = jsPlumbInstance.select({
+          source: params.sourceId as any
+        });
+
+        if (sourceConnections.entries.length) {
+          for (const existingConnection of sourceConnections.entries) {
+            if (existingConnection.targetId !== params.targetId) {
+              onConnectionDetached([
+                existingConnection.sourceId,
+                existingConnection.targetId
+              ]);
+            }
+          }
         }
 
         onGraphUpdate({
@@ -551,30 +578,10 @@ export const useJsPlumb = (
     };
   }, []);
 
-  useEffect(() => {
-    eventBus.on("GENERATE", () => {
-      if (!instance) return;
-
-      if (stateRef.current) {
-        onGraphUpdate({
-          nodes: stateRef.current,
-          connections: getConnections(
-            instance.getConnections({}, true) as Connection[]
-          )
-        });
-      }
-    });
-
-    return () => {
-      eventBus.remove("GENERATE", () => undefined);
-    };
-  }, []);
-
   return {
     containerCallbackRef,
     setZoom,
     setStyle,
-    removeEndpoint,
-    addToGroup
+    removeEndpoint
   };
 };

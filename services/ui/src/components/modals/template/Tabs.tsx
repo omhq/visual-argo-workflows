@@ -18,28 +18,25 @@ const Tabs = (props: ITabsProps) => {
       name: "Container",
       href: "#",
       current: false,
-      hidden:
-        formik.values.nodeConfig.metaData.type === "container" ? false : true
+      hidden: formik.values.data.type === "container" ? false : true
     },
     {
       name: "Script",
       href: "#",
       current: false,
-      hidden: formik.values.nodeConfig.metaData.type === "script" ? false : true
+      hidden: formik.values.data.type === "script" ? false : true
     },
     {
       name: "Resource",
       href: "#",
       current: false,
-      hidden:
-        formik.values.nodeConfig.metaData.type === "resource" ? false : true
+      hidden: formik.values.data.type === "resource" ? false : true
     },
     {
       name: "Suspend",
       href: "#",
       current: false,
-      hidden:
-        formik.values.nodeConfig.metaData.type === "suspend" ? false : true
+      hidden: formik.values.data.type === "suspend" ? false : true
     }
   ];
 

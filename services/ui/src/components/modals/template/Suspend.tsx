@@ -16,8 +16,8 @@ const Suspend = () => {
       <div className="grid grid-cols-3 gap-4">
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.suspend.duration"}
-            name={"nodeConfig.template.suspend.duration"}
+            id={"data.template.suspend.duration"}
+            name={"data.template.suspend.duration"}
             placeholder={"20s"}
             label={"Duration"}
             required={true}

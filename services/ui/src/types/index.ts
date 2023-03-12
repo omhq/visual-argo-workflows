@@ -35,7 +35,10 @@ export interface INodeGroup {
 
 export interface INodeItem extends IClientNodePosition {
   type: string;
-  nodeConfig: any;
+  configs: {
+    name: string;
+  };
+  data: any;
   inputs: string[];
   outputs: string[];
 }
@@ -44,20 +47,19 @@ export interface IFlatConnection {
   target: string;
 }
 
-export interface ITemplateNodeItem extends INodeItem {
-  nodeConfig: {
-    metaData: {
-      type: string;
-    };
+export interface IEntryPointNode extends INodeItem {
+  data: any;
+}
+
+export interface ITemplateNode extends INodeItem {
+  data: {
+    type: string;
     template: Partial<ITemplate>;
   };
 }
 
-export interface IGroupNodeItem extends INodeItem {
-  nodeConfig: {
-    metaData: {
-      type: string;
-    };
+export interface IGroupNode extends INodeItem {
+  data: {
     group: Partial<IGroup>;
   };
 }
@@ -91,10 +93,8 @@ type Task = {
 };
 
 export interface IEditTemplateForm {
-  nodeConfig: {
-    metaData: {
-      type: string;
-    };
+  data: {
+    type: string;
     template: {
       name: string;
       container?: {

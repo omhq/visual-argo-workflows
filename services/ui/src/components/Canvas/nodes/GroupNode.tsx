@@ -1,6 +1,6 @@
 import { styled } from "@mui/material";
 import { FunctionComponent, ReactElement } from "react";
-import { IGroupNodeItem } from "../../types";
+import { IGroupNode } from "../../../types";
 
 const Root = styled("div")`
   width: fit-content;
@@ -18,14 +18,16 @@ const Root = styled("div")`
   border-width: 1px;
 `;
 
-export interface IGroupProps {
-  group: IGroupNodeItem;
+interface IGroupNodeProps {
+  group: IGroupNode;
 }
 
-export const Group: FunctionComponent<IGroupProps> = (
-  props: IGroupProps
+const GroupNode: FunctionComponent<IGroupNodeProps> = (
+  props: IGroupNodeProps
 ): ReactElement => {
   const { group } = props;
 
   return <Root id={group.key}></Root>;
 };
+
+export default GroupNode;

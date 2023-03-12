@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import YAML from "yaml";
 import { debounce } from "lodash";
-import { generatePayload } from "../../utils/generators";
+import generateSteppedManifest from "../../utils/generators/step";
 import eventBus from "../../events/eventBus";
 import CodeEditor from "../CodeEditor";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
@@ -45,17 +45,9 @@ const CodeBox = () => {
   }, [language, generatedCode]);
 
   useEffect(() => {
-    eventBus.dispatch("GENERATE", {
-      message: {
-        id: ""
-      }
-    });
-  }, []);
-
-  useEffect(() => {
     eventBus.on("FETCH_CODE", (data) => {
       const graphData = data.detail.message;
-      debouncedOnGraphUpdate(generatePayload(graphData));
+      debouncedOnGraphUpdate(generateSteppedManifest(graphData));
     });
 
     return () => {

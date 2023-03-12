@@ -20,8 +20,8 @@ const Script = () => {
       <div className="grid grid-cols-3 gap-4">
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.script.name"}
-            name={"nodeConfig.template.script.name"}
+            id={"data.template.script.name"}
+            name={"data.template.script.name"}
             placeholder={""}
             label={"Name of the container specified as a DNS_LABEL"}
             required={false}
@@ -30,8 +30,8 @@ const Script = () => {
 
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.script.image"}
-            name={"nodeConfig.template.script.image"}
+            id={"data.template.script.image"}
+            name={"data.template.script.image"}
             placeholder={"docker/whalesay"}
             label={"Image"}
             required={true}
@@ -40,8 +40,8 @@ const Script = () => {
 
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.script.command"}
-            name={"nodeConfig.template.script.command"}
+            id={"data.template.script.command"}
+            name={"data.template.script.command"}
             placeholder={"cowsay"}
             label={"Command"}
             required={false}
@@ -50,8 +50,8 @@ const Script = () => {
 
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.script.args"}
-            name={"nodeConfig.template.script.args"}
+            id={"data.template.script.args"}
+            name={"data.template.script.args"}
             placeholder={"hello world"}
             label={"Args"}
             required={false}
@@ -60,8 +60,8 @@ const Script = () => {
 
         <div className="col-span-3">
           <TextField
-            id={"nodeConfig.template.script.imagePullPolicy"}
-            name={"nodeConfig.template.script.imagePullPolicy"}
+            id={"data.template.script.imagePullPolicy"}
+            name={"data.template.script.imagePullPolicy"}
             placeholder={"Always, Never, IfNotPresent"}
             label={"Image pull policy"}
             required={false}
@@ -80,8 +80,8 @@ const Script = () => {
             rows={2}
             className="input-util"
             placeholder=""
-            name={`nodeConfig.template.script.source`}
-            value={formik.values.nodeConfig.template.script?.source}
+            name={`data.template.script.source`}
+            value={formik.values.data.template.script?.source}
             onChange={formik.handleChange}
           ></textarea>
         </div>
