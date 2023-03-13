@@ -30,6 +30,7 @@ export default function App() {
       <Toaster />
       <SideBar />
       <Routes>
+        <Route path="/" element={<Project />} />
         <Route path="/projects/new" element={<Project />} />
       </Routes>
     </ThemeProvider>
