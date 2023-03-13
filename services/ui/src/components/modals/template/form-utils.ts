@@ -91,6 +91,7 @@ export const validationSchema = yup
 const initialValues: IEditTemplateForm = {
   data: {
     type: "",
+    when: "",
     template: {
       name: "Untitled",
       container: {
@@ -131,6 +132,7 @@ export const getInitialValues = (node?: ITemplateNode) => {
   return {
     data: {
       type: data.type ?? "",
+      when: data.when ?? "",
       template: {
         name: data.template.name ?? initialValues.data.template.name,
         container: {
@@ -142,12 +144,12 @@ export const getInitialValues = (node?: ITemplateNode) => {
             : "",
           command: data.template.container
             ? data.template.container.command
-              ? data.template.container.command.join(" ")
+              ? data.template.container.command.join(",")
               : ""
             : "",
           args: data.template.container
             ? data.template.container.args
-              ? data.template.container.args.join(" ")
+              ? data.template.container.args.join(",")
               : ""
             : "",
           imagePullPolicy: data.template.container
@@ -159,12 +161,12 @@ export const getInitialValues = (node?: ITemplateNode) => {
           image: data.template.script ? data.template.script.image ?? "" : "",
           command: data.template.script
             ? data.template.script.command
-              ? data.template.script.command.join(" ")
+              ? data.template.script.command.join(",")
               : ""
             : "",
           args: data.template.script
             ? data.template.script.args
-              ? data.template.script.args.join(" ")
+              ? data.template.script.args.join(",")
               : ""
             : "",
           imagePullPolicy: data.template.script
@@ -228,6 +230,7 @@ export const getTemplateNodeFinalValues = (
     },
     data: {
       type: data.type,
+      when: data.when,
       template: {
         name: data.template.name
       }
@@ -240,8 +243,8 @@ export const getTemplateNodeFinalValues = (
       container: pruneObject({
         name: pruneString(data.template.container.name),
         image: data.template.container.image,
-        command: pruneArray(data.template.container.command.split(" ")),
-        args: pruneArray(data.template.container.args.split(" ")),
+        command: pruneArray(data.template.container.command.split(",")),
+        args: pruneArray(data.template.container.args.split(",")),
         imagePullPolicy: pruneString(data.template.container.imagePullPolicy)
       })
     };
@@ -253,8 +256,8 @@ export const getTemplateNodeFinalValues = (
       script: pruneObject({
         name: pruneString(data.template.script.name),
         image: data.template.script.image,
-        command: pruneArray(data.template.script.command.split(" ")),
-        args: pruneArray(data.template.script.args.split(" ")),
+        command: pruneArray(data.template.script.command.split(",")),
+        args: pruneArray(data.template.script.args.split(",")),
         imagePullPolicy: pruneString(data.template.script.imagePullPolicy),
         source: pruneString(data.template.script.source)
       })

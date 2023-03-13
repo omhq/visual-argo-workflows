@@ -55,6 +55,7 @@ export interface ITemplateNode extends INodeItem {
   data: {
     type: string;
     template: Partial<ITemplate>;
+    when?: string;
   };
 }
 
@@ -95,6 +96,7 @@ type Task = {
 export interface IEditTemplateForm {
   data: {
     type: string;
+    when?: string;
     template: {
       name: string;
       container?: {

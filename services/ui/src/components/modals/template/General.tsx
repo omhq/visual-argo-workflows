@@ -51,6 +51,16 @@ const General = () => {
             </select>
           </div>
         </div>
+
+        <div className="col-span-3">
+          <TextField
+            id={"data.when"}
+            name={"data.when"}
+            placeholder={"when"}
+            label={"When"}
+            required={false}
+          />
+        </div>
       </div>
     </Root>
   );

@@ -60,7 +60,8 @@ const getTotalSteps = (
 const nodeStepObj = (node: INodeItem): any => {
   return {
     name: node.data.template.name || "Untitiled",
-    template: node.data.template.name || "Untitiled"
+    template: node.data.template.name || "Untitiled",
+    when: node.data.when || ""
   };
 };
 
