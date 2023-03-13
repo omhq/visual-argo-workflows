@@ -1,1 +1,0 @@
-export const StepNodeConfiguration = '{"prettyName":"","name":"","key":"step","type":"STEP","inputs":["op_source"],"outputs":[]}';
