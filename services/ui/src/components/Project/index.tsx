@@ -151,11 +151,19 @@ export default function Project() {
   };
 
   const onNodeSelect = (data: any) => {
+    const shiftKey = data.event.shiftKey;
+
     if (
       stateSelectedNodesRef.current &&
-      !data.message.id.includes("entrypoint")
+      !data.message.id.includes("entrypoint") &&
+      !data.message.id.includes("group")
     ) {
-      const selectedNodesNew = { ...stateSelectedNodesRef.current };
+      let selectedNodesNew = {} as any;
+
+      if (shiftKey) {
+        selectedNodesNew = { ...stateSelectedNodesRef.current };
+      }
+
       selectedNodesNew[data.message.id] = {};
       setSelectedNodes(selectedNodesNew);
     }
