@@ -38,11 +38,13 @@ import { getConnections } from "../../utils";
 import { INodeItem } from "../../types";
 import { Dictionary, isEqual } from "lodash";
 import { IAnchor, CallbackFunction } from "../../types";
+import { calculateGroupSize } from "./jsPlumbUtils";
 
 export interface IJsPlumb {
   containerCallbackRef: (containerElement: HTMLDivElement) => void;
   setZoom: (zoom: number) => void;
   setStyle: (style: any) => void;
+  reset: () => void;
   removeEndpoint: (node: INodeItem) => void;
 }
 
@@ -518,6 +520,10 @@ export const useJsPlumb = (
     );
 
     jsPlumbInstance.bind(EVENT_GROUP_MEMBER_REMOVED, (data: any) => {
+      const groupDimentions = calculateGroupSize(data.group.children.length);
+      data.group.el.style.minHeight = `${groupDimentions.groupHeight}px`;
+      data.group.el.style.minWidth = `${groupDimentions.groupWidth}px`;
+
       eventBus.dispatch("EVENT_GROUP_MEMBER_REMOVED", {
         message: {
           data: {
@@ -529,6 +535,13 @@ export const useJsPlumb = (
     });
 
     jsPlumbInstance.bind(EVENT_GROUP_MEMBER_ADDED, (data: any) => {
+      const groupDimentions = calculateGroupSize(data.group.children.length);
+      data.group.el.style.minHeight = `${groupDimentions.groupHeight}px`;
+      data.group.el.style.minWidth = `${groupDimentions.groupWidth}px`;
+
+      data.el.style.top = "20px";
+      data.el.style.left = "20px";
+
       eventBus.dispatch("EVENT_GROUP_MEMBER_ADDED", {
         message: {
           data: {
@@ -582,6 +595,7 @@ export const useJsPlumb = (
     containerCallbackRef,
     setZoom,
     setStyle,
+    reset,
     removeEndpoint
   };
 };

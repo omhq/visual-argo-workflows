@@ -12,7 +12,6 @@ const Root = styled("div")`
   width: fit-content;
   height: fit-content;
   background: #9f63c408;
-  /* opacity: 0.2; */
   border-color: #9f63c4;
   border-style: dotted;
   border-width: 1px;
@@ -27,7 +26,15 @@ const GroupNode: FunctionComponent<IGroupNodeProps> = (
 ): ReactElement => {
   const { group } = props;
 
-  return <Root id={group.key}></Root>;
+  return (
+    <Root
+      id={group.key}
+      style={{
+        top: group.position.top,
+        left: group.position.left
+      }}
+    ></Root>
+  );
 };
 
 export default GroupNode;

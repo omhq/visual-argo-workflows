@@ -35,6 +35,10 @@ const EntryPointNode: FunctionComponent<IEntryPointNodeProps> = (
     <Root
       className={"node-item cursor-pointer shadow flex flex-col group"}
       id={entrypoint.key}
+      style={{
+        top: entrypoint.position.top,
+        left: entrypoint.position.left
+      }}
     >
       <StyledLabel className="flex flex-col items-center h-full my-auto text-gray-600">
         <div>E</div>
