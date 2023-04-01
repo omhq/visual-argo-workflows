@@ -15,7 +15,9 @@ import {
   flattenLibraries,
   ensure,
   getMatchingSetIndex,
-  attachUUID
+  attachUUID,
+  filterGroups,
+  getGroupPosition
 } from "../../utils";
 import { Canvas } from "../Canvas";
 import ModalConfirmDelete from "../modals/ConfirmDelete";
@@ -54,10 +56,20 @@ export default function Project() {
 
   const onNodeUpdate = (positionData: IClientNodePosition) => {
     if (stateNodesRef.current) {
+      const groups = filterGroups(stateNodesRef.current);
+
+      for (const [, value] of Object.entries(groups)) {
+        if (value.data.group.nodeIds.includes(positionData.key)) {
+          positionData.position = getGroupPosition();
+          break;
+        }
+      }
+
       const node = {
         ...stateNodesRef.current[positionData.key],
         ...positionData
       };
+
       setNodes({ ...stateNodesRef.current, [positionData.key]: node });
     }
   };
@@ -152,14 +164,12 @@ export default function Project() {
 
   const onNodeSelect = (data: any) => {
     const shiftKey = data.event.shiftKey;
-
     if (
       stateSelectedNodesRef.current &&
       !data.message.id.includes("entrypoint") &&
       !data.message.id.includes("group")
     ) {
       let selectedNodesNew = {} as any;
-
       if (shiftKey) {
         selectedNodesNew = { ...stateSelectedNodesRef.current };
       }
@@ -173,12 +183,19 @@ export default function Project() {
     if (stateNodesRef.current) {
       const data = message.message.data;
       const group = stateNodesRef.current[data.groupId];
+      const node = stateNodesRef.current[data.nodeId];
 
       if (!group.data.group.nodeIds.includes(data.nodeId)) {
         group.data.group.nodeIds.push(data.nodeId);
       }
 
-      setNodes({ ...stateNodesRef.current, [data.groupId]: group });
+      node.position = getGroupPosition();
+
+      setNodes({
+        ...stateNodesRef.current,
+        [data.groupId]: group,
+        [data.nodeId]: node
+      });
     }
   };
 

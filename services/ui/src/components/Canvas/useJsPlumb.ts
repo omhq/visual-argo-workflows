@@ -539,9 +539,6 @@ export const useJsPlumb = (
       data.group.el.style.minHeight = `${groupDimentions.groupHeight}px`;
       data.group.el.style.minWidth = `${groupDimentions.groupWidth}px`;
 
-      data.el.style.top = "20px";
-      data.el.style.left = "20px";
-
       eventBus.dispatch("EVENT_GROUP_MEMBER_ADDED", {
         message: {
           data: {

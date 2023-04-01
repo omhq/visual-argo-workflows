@@ -190,3 +190,22 @@ export const getMatchingSetIndex = (
 export const classNames = (...classes: string[]) => {
   return classes.filter(Boolean).join(" ");
 };
+
+export const filterGroups = (nodes: Dictionary<INodeItem>) => {
+  const groups: Dictionary<INodeItem> = Object.keys(nodes)
+    .filter((x: any) => {
+      if (x.includes("group")) {
+        return x;
+      }
+    })
+    .reduce((obj: any, key: string) => {
+      obj[key] = nodes[key];
+      return obj;
+    }, {});
+
+  return groups;
+};
+
+export const getGroupPosition = () => {
+  return { top: 20, left: 20 };
+};
