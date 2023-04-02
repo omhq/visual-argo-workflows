@@ -5,7 +5,8 @@ import {
   ITemplateNode,
   INodeItem,
   IClientNodePosition,
-  IEntryPointNode
+  IEntryPointNode,
+  IGroupNode
 } from "../../types";
 import eventBus from "../../events/eventBus";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
@@ -54,14 +55,30 @@ export default function Project() {
   stateConnectionsRef.current = connections;
   stateSelectedNodesRef.current = selectedNodes;
 
+  const updateGroupNodePositions = (group: IGroupNode) => {
+    const offsets = { top: 0, left: 0 };
+
+    if (group.data.group.nodeIds && stateNodesRef.current) {
+      for (const nodeId of group.data.group.nodeIds) {
+        const node = stateNodesRef.current[nodeId];
+        node.position = getGroupPosition(offsets);
+        setNodes({
+          ...stateNodesRef.current,
+          [nodeId]: node
+        });
+        offsets.top += 80;
+      }
+    }
+  };
+
   const onNodeUpdate = (positionData: IClientNodePosition) => {
     if (stateNodesRef.current) {
       const groups = filterGroups(stateNodesRef.current);
 
       for (const [, value] of Object.entries(groups)) {
         if (value.data.group.nodeIds.includes(positionData.key)) {
-          positionData.position = getGroupPosition();
-          break;
+          updateGroupNodePositions(value);
+          return;
         }
       }
 
@@ -108,7 +125,6 @@ export default function Project() {
       });
 
       if (clientNodeItem.type === "TEMPLATE") {
-        //setTemplateToEdit(clientNodeItem as ITemplateNode);
         setShowModalCreateTemplate(false);
       }
     }
@@ -183,18 +199,15 @@ export default function Project() {
     if (stateNodesRef.current) {
       const data = message.message.data;
       const group = stateNodesRef.current[data.groupId];
-      const node = stateNodesRef.current[data.nodeId];
 
       if (!group.data.group.nodeIds.includes(data.nodeId)) {
         group.data.group.nodeIds.push(data.nodeId);
       }
 
-      node.position = getGroupPosition();
-
+      updateGroupNodePositions(group);
       setNodes({
         ...stateNodesRef.current,
-        [data.groupId]: group,
-        [data.nodeId]: node
+        [data.groupId]: group
       });
     }
   };
@@ -208,6 +221,7 @@ export default function Project() {
         (x: any) => x !== data.nodeId
       );
 
+      updateGroupNodePositions(group);
       setNodes({ ...stateNodesRef.current, [data.groupId]: group });
     }
   };

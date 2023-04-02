@@ -206,6 +206,6 @@ export const filterGroups = (nodes: Dictionary<INodeItem>) => {
   return groups;
 };
 
-export const getGroupPosition = () => {
-  return { top: 20, left: 20 };
+export const getGroupPosition = (offsets: { top: number; left: number }) => {
+  return { top: 20 + offsets.top, left: 20 + offsets.left };
 };
