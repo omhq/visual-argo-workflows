@@ -20,7 +20,7 @@
     "@codemirror/view": "^0.19.0",
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
-    "@heroicons/react": "^2.0.11",
+    "@heroicons/react": "^2.0.18",
     "@jsplumb/browser-ui": "5.13.7",
     "@jsplumb/common": "5.13.7",
     "@jsplumb/connector-bezier": "5.13.7",
