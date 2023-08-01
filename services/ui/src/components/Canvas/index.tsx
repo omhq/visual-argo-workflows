@@ -7,12 +7,14 @@ import {
   ITemplateNode,
   INodeItem,
   IGroupNode,
-  IEntryPointNode
+  IEntryPointNode,
+  IOnExitNode
 } from "../../types";
 import TemplateNode from "./nodes/TemplateNode";
 import { IJsPlumb } from "./useJsPlumb";
 import GroupNode from "./nodes/GroupNode";
 import EntryPointNode from "./nodes/EntryPointNode";
+import OnExitNode from "./nodes/OnExitNode";
 
 const CANVAS_ID: string = "canvas-container-" + uuidv4();
 
@@ -83,19 +85,17 @@ export const Canvas: FunctionComponent<ICanvasProps> = (
   };
 
   const onCanvasMouseUpLeave = (e: any) => {
-    if (dragging) {
-      if (e.pageX && e.pageY) {
-        const left = _left + e.pageX - _initX;
-        const top = _top + e.pageY - _initY;
+    if (dragging && e.pageX && e.pageY) {
+      const left = _left + e.pageX - _initX;
+      const top = _top + e.pageY - _initY;
 
-        _setLeft(left);
-        _setTop(top);
-        setDragging(false);
-        onCanvasUpdate({
-          left: left,
-          top: top
-        });
-      }
+      _setLeft(left);
+      _setTop(top);
+      setDragging(false);
+      onCanvasUpdate({
+        left: left,
+        top: top
+      });
     }
   };
 
@@ -194,6 +194,11 @@ export const Canvas: FunctionComponent<ICanvasProps> = (
               if (x.type === "ENTRYPOINT") {
                 x = x as IEntryPointNode;
                 return <EntryPointNode key={x.key} entrypoint={x} />;
+              }
+
+              if (x.type === "ONEXIT") {
+                x = x as IOnExitNode;
+                return <OnExitNode key={x.key} onexit={x} />;
               }
             })}
           </div>

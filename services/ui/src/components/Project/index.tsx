@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Dictionary, omit } from "lodash";
-import { PlusIcon, CubeIcon } from "@heroicons/react/20/solid";
+import { PlusIcon } from "@heroicons/react/20/solid";
 import {
   ITemplateNode,
   INodeItem,
   IClientNodePosition,
-  IEntryPointNode,
   IGroupNode
 } from "../../types";
 import eventBus from "../../events/eventBus";
@@ -30,6 +29,10 @@ import Header from "./Header";
 import { useJsPlumb } from "../Canvas/useJsPlumb";
 import { getGroupNodeValues } from "../modals/template/form-utils";
 
+import defaultCanvasPosition from "../../configs/defaults/canvasPosition";
+import defaultNodes from "../../configs/defaults/nodes";
+import defaultConnections from "../../configs/defaults/connections";
+
 export default function Project() {
   const { height } = useWindowDimensions();
   const stateNodesRef = useRef<Dictionary<INodeItem>>();
@@ -43,11 +46,13 @@ export default function Project() {
   const [selectedNodes, setSelectedNodes] = useState<Record<string, any>>({});
   const [nodes, setNodes] = useState<Record<string, INodeItem>>({});
   const [connections, setConnections] = useState<[[string, string]] | []>([]);
-  const [canvasPosition, setCanvasPosition] = useState({
-    top: 0,
-    left: 0,
-    scale: 1
-  });
+  const [canvasPosition, setCanvasPosition] = useState<Record<string, number>>(
+    {}
+  );
+
+  //console.log(JSON.stringify(nodes));
+  //console.log(JSON.stringify(connections));
+  //console.log(JSON.stringify(canvasPosition));
 
   useTitle(["New workflow", ""].join(" | "));
 
@@ -62,6 +67,8 @@ export default function Project() {
       for (const nodeId of group.data.group.nodeIds) {
         const node = stateNodesRef.current[nodeId];
         node.position = getGroupPosition(offsets);
+
+        console.log(node);
         setNodes({
           ...stateNodesRef.current,
           [nodeId]: node
@@ -106,18 +113,26 @@ export default function Project() {
     setSelectedNodes({});
   };
 
-  const onAddEndpoint = (values: any) => {
-    if (stateNodesRef.current) {
-      const sections = flattenLibraries(nodeLibraries);
-      const clientNodeItem = getClientNodeItem(
-        values,
-        ensure(sections.find((l) => l.type === values.type))
-      );
+  const prepEndpoint = (values: any) => {
+    const sections = flattenLibraries(nodeLibraries);
+    const clientNodeItem = getClientNodeItem(
+      values,
+      ensure(sections.find((l) => l.type === values.type))
+    );
 
+    if (!values.position.left && !values.position.top) {
       clientNodeItem.position = {
         left: 60 - canvasPosition.left,
         top: 30 - canvasPosition.top
       };
+    }
+
+    return clientNodeItem;
+  };
+
+  const onAddEndpoint = (values: any) => {
+    if (stateNodesRef.current) {
+      const clientNodeItem = prepEndpoint(values);
 
       setNodes({
         ...stateNodesRef.current,
@@ -179,7 +194,8 @@ export default function Project() {
   };
 
   const onNodeSelect = (data: any) => {
-    const shiftKey = data.event.shiftKey;
+    const { shiftKey } = data.event;
+
     if (
       stateSelectedNodesRef.current &&
       !data.message.id.includes("entrypoint") &&
@@ -197,7 +213,7 @@ export default function Project() {
 
   const onGroupMemberAdded = (message: any) => {
     if (stateNodesRef.current) {
-      const data = message.message.data;
+      const { data } = message.message;
       const group = stateNodesRef.current[data.groupId];
 
       if (!group.data.group.nodeIds.includes(data.nodeId)) {
@@ -214,7 +230,7 @@ export default function Project() {
 
   const onGroupMemberRemoved = (message: any) => {
     if (stateNodesRef.current) {
-      const data = message.message.data;
+      const { data } = message.message;
       const group = stateNodesRef.current[data.groupId];
 
       group.data.group.nodeIds = group.data.group.nodeIds.filter(
@@ -226,13 +242,13 @@ export default function Project() {
     }
   };
 
-  const onNestedGroupAdded = (message: any) => {
+  const onNestedGroupAdded = () => {
     return;
   };
 
   const onNestedGroupRemoved = (message: any) => {
     if (stateNodesRef.current) {
-      const data = message.message.data;
+      const { data } = message.message;
       const parentGroup = stateNodesRef.current[data.parent];
 
       parentGroup.data.group.nodeIds = parentGroup.data.group.nodeIds.filter(
@@ -245,7 +261,7 @@ export default function Project() {
 
   const onGroupRemoved = (message: any) => {
     if (stateNodesRef.current) {
-      const data = message.message.data;
+      const { data } = message.message;
       const updated = { ...stateNodesRef.current };
       delete updated[data.groupId];
       setNodes(updated);
@@ -287,20 +303,18 @@ export default function Project() {
   }, [selectedNodes]);
 
   useEffect(() => {
-    const entryPointNode: IEntryPointNode = {
-      key: attachUUID("entrypoint"),
-      position: { left: 60, top: 60 },
-      outputs: ["op_source"],
-      type: "ENTRYPOINT",
-      configs: {
-        name: "entrypoint"
-      },
-      inputs: [],
-      data: undefined
-    };
+    setNodes({
+      ...stateNodesRef.current,
+      ...(defaultNodes as any)
+    });
+  }, []);
 
-    onAddEndpoint(entryPointNode);
+  useEffect(() => {
+    setConnections(defaultConnections as any);
+    setCanvasPosition(defaultCanvasPosition as any);
+  }, [defaultConnections]);
 
+  useEffect(() => {
     eventBus.on("EVENT_ELEMENT_CLICK", (data: any) => {
       onNodeSelect(data.detail);
     });
@@ -313,8 +327,8 @@ export default function Project() {
       onGroupMemberRemoved(data.detail);
     });
 
-    eventBus.on("EVENT_NESTED_GROUP_ADDED", (data: any) => {
-      onNestedGroupAdded(data.detail);
+    eventBus.on("EVENT_NESTED_GROUP_ADDED", () => {
+      onNestedGroupAdded();
     });
 
     eventBus.on("EVENT_NESTED_GROUP_REMOVED", (data: any) => {
@@ -379,8 +393,8 @@ export default function Project() {
                       type="button"
                       onClick={handleCreateGroup}
                     >
-                      <CubeIcon className="w-4" />
-                      <span>Group selected</span>
+                      <PlusIcon className="w-4" />
+                      <span>Parallel</span>
                     </button>
                   )}
                   <button

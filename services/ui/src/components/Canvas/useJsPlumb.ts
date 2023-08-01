@@ -120,7 +120,10 @@ export const useJsPlumb = (
   );
 
   const addGroup = (groupId: string): UIGroup | void => {
-    if (!instanceRef.current) return;
+    if (!instanceRef.current) {
+      return;
+    }
+
     const instance = instanceRef.current;
     const element = document.getElementById(groupId) as Element;
 
@@ -144,7 +147,9 @@ export const useJsPlumb = (
   };
 
   const removeEndpoint = (node: any) => {
-    if (!instanceRef.current) return;
+    if (!instanceRef.current) {
+      return;
+    }
 
     const instance = instanceRef.current;
     const nodeConnections = instance.getConnections({ target: node.key });
@@ -226,14 +231,6 @@ export const useJsPlumb = (
     instance: BrowserJsPlumbInstance,
     params: BeforeDropParams
   ): boolean => {
-    // entrypoint should only connect to a node
-    if (
-      params.sourceId.includes("entrypoint") &&
-      params.targetId.includes("group")
-    ) {
-      return false;
-    }
-
     const existingConnections: ConnectionSelection = instance.select({
       source: params.sourceId as any,
       target: params.targetId as any
@@ -316,7 +313,9 @@ export const useJsPlumb = (
   };
 
   const getOrCreateUIGroup = (key: string): UIGroup | void => {
-    if (!instance) return;
+    if (!instance) {
+      return;
+    }
 
     try {
       return instance.getGroup(key);
@@ -326,7 +325,9 @@ export const useJsPlumb = (
   };
 
   useEffect(() => {
-    if (!instance) return;
+    if (!instance) {
+      return;
+    }
 
     if (stateRef.current) {
       Object.values(stateRef.current).forEach((x) => {
@@ -351,10 +352,8 @@ export const useJsPlumb = (
             if (x.data.group.nodeIds.length) {
               for (const nodeId of x.data.group.nodeIds) {
                 const el = document.getElementById(nodeId);
-                if (el) {
-                  if (instance.getGroup(x.key)) {
-                    instance.addToGroup(x.key, el);
-                  }
+                if (el && instance.getGroup(x.key)) {
+                  instance.addToGroup(x.key, el);
                 }
               }
             } else {
@@ -374,7 +373,9 @@ export const useJsPlumb = (
   }, [instance, addEndpoints, onGraphUpdate, stateRef.current]);
 
   useEffect(() => {
-    if (!instance) return;
+    if (!instance) {
+      return;
+    }
 
     const currentConnections = instance.getConnections(
       {},

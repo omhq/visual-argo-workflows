@@ -43,11 +43,21 @@ export interface INodeItem extends IClientNodePosition {
   outputs: string[];
 }
 
+export interface INodeStepObj {
+  name?: string;
+  template?: string;
+  when?: string;
+}
+
 export interface IFlatConnection {
   target: string;
 }
 
 export interface IEntryPointNode extends INodeItem {
+  data: any;
+}
+
+export interface IOnExitNode extends INodeItem {
   data: any;
 }
 

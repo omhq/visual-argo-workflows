@@ -3,7 +3,9 @@ import {
   ITemplate,
   IWorkflow,
   INodeItem,
-  FlatConnection
+  FlatConnection,
+  INodeStepObj,
+  IGroupNode
 } from "../../types";
 import { Dictionary } from "lodash";
 import { NodeTypes } from "../../types/enums";
@@ -40,6 +42,10 @@ const getTotalSteps = (
   }
 
   while (head) {
+    if (head.includes("group")) {
+      count++;
+    }
+
     const connection: FlatConnection | undefined = connections.find((conn) => {
       if (conn.source === head) {
         return conn;
@@ -57,12 +63,34 @@ const getTotalSteps = (
   return count;
 };
 
-const nodeStepObj = (node: INodeItem): any => {
-  return {
+const nodeStepObj = (node: INodeItem): INodeStepObj => {
+  const ret: INodeStepObj = {
     name: node.data.template.name || "Untitiled",
-    template: node.data.template.name || "Untitiled",
-    when: node.data.when || ""
+    template: node.data.template.name || "Untitiled"
   };
+
+  if (node.data.when) {
+    ret.when = node.data.when;
+  }
+
+  return ret;
+};
+
+const getGroupedSteps = (
+  firstNode: IGroupNode,
+  nodes: Record<string, INodeItem>
+): any => {
+  const ret: any = [];
+  if (firstNode.data.group.nodeIds) {
+    for (const nodeId of firstNode.data.group.nodeIds) {
+      const node = nodes[nodeId];
+      if (node.type == NodeTypes.TEMPLATE) {
+        ret.push(nodeStepObj(node));
+      }
+    }
+  }
+
+  return [ret];
 };
 
 const getSteps = (
@@ -173,37 +201,29 @@ const getTemplate = (nodes: Dictionary<ITemplateNode>): ITemplate[] | [] => {
       name: node.data.template.name || "Untitled"
     };
 
-    if (node.data.type === "container") {
-      if (node.data.template.container) {
-        template.container = {
-          ...node.data.template.container
-        };
-      }
+    if (node.data.type === "container" && node.data.template.container) {
+      template.container = {
+        ...node.data.template.container
+      };
     }
 
-    if (node.data.type === "script") {
-      if (node.data.template.script) {
-        template.script = {
-          ...node.data.template.script
-        };
-      }
+    if (node.data.type === "script" && node.data.template.script) {
+      template.script = {
+        ...node.data.template.script
+      };
     }
 
-    if (node.data.type === "resource") {
-      if (node.data.template.resource) {
-        template.resource = {
-          action: node.data.template.resource.action,
-          manifest: stringify(node.data.template.resource.manifest)
-        };
-      }
+    if (node.data.type === "resource" && node.data.template.resource) {
+      template.resource = {
+        action: node.data.template.resource.action,
+        manifest: stringify(node.data.template.resource.manifest)
+      };
     }
 
-    if (node.data.type === "suspend") {
-      if (node.data.template.suspend) {
-        template.suspend = {
-          ...node.data.template.suspend
-        };
-      }
+    if (node.data.type === "suspend" && node.data.template.suspend) {
+      template.suspend = {
+        ...node.data.template.suspend
+      };
     }
 
     ret.push(template);
@@ -226,6 +246,18 @@ const getBaseWorkflowTemplate = (): IWorkflow => {
   };
 };
 
+const getEntryPointName = (node: INodeItem): string => {
+  let ret = "undefined";
+
+  if (node.data.template && node.data.template.name) {
+    ret = node.data.template.name;
+  } else {
+    ret = "group";
+  }
+
+  return ret;
+};
+
 const generateSteppedManifest = (graphData: any): IWorkflow => {
   const nodes = graphData["nodes"] as Record<string, INodeItem>;
   const connections = graphData["connections"];
@@ -239,12 +271,24 @@ const generateSteppedManifest = (graphData: any): IWorkflow => {
 
   if (entryPoint) {
     const totalSteps = getTotalSteps(entryPoint.key, connections);
-    base.spec.entrypoint = entryPoint.data.template.name || "Undefined";
+    const entryPointName = getEntryPointName(entryPoint);
 
-    if (totalSteps >= 1) {
+    base.spec.entrypoint = entryPointName;
+
+    if (entryPoint.type === "GROUP") {
+      const steps: any = getGroupedSteps(entryPoint as any, nodes);
+      const stepsTemplate: ITemplate = {
+        name: entryPointName,
+        steps: steps
+      };
+
+      base.spec.templates.push(stepsTemplate);
+    }
+
+    if (totalSteps >= 2) {
       const steps: any = getSteps(entryPoint, nodes, connections, {});
       const stepsTemplate: ITemplate = {
-        name: `steps-from-${entryPoint.data.template.name}` || "Untitiled",
+        name: entryPointName,
         steps: steps
       };
 

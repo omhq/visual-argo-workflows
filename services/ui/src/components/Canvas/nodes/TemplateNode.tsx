@@ -3,7 +3,6 @@ import { truncateStr } from "../../../utils";
 import { ITemplateNode, CallbackFunction } from "../../../types";
 import eventBus from "../../../events/eventBus";
 import { Popover } from "../Popover";
-import NodeIcon from "../NodeIcon";
 
 interface ITemplateNodeProps {
   node: ITemplateNode;
@@ -42,6 +41,8 @@ const TemplateNode: FunctionComponent<ITemplateNodeProps> = (
     };
   }, []);
 
+  console.log(node.position.top, node.position.left);
+
   return (
     <div
       key={node.key}
@@ -78,8 +79,6 @@ const TemplateNode: FunctionComponent<ITemplateNodeProps> = (
               {truncateStr(node.data.template.name, 12)}
             </div>
           )}
-
-          <NodeIcon nodeType={node.type} />
         </>
       </div>
     </div>

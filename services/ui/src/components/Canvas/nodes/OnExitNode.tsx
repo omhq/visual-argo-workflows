@@ -1,6 +1,6 @@
 import { styled } from "@mui/material";
 import { FunctionComponent, ReactElement } from "react";
-import { IEntryPointNode } from "../../../types";
+import { IOnExitNode } from "../../../types";
 
 const Root = styled("div")`
   width: fit-content;
@@ -22,29 +22,29 @@ const StyledLabel = styled("div")`
   font-weight: 700;
 `;
 
-interface IEntryPointNodeProps {
-  entrypoint: IEntryPointNode;
+interface IOnExitNodeProps {
+  onexit: IOnExitNode;
 }
 
-const EntryPointNode: FunctionComponent<IEntryPointNodeProps> = (
-  props: IEntryPointNodeProps
+const OnExitNode: FunctionComponent<IOnExitNodeProps> = (
+  props: IOnExitNodeProps
 ): ReactElement => {
-  const { entrypoint } = props;
+  const { onexit } = props;
 
   return (
     <Root
       className={"node-item cursor-pointer shadow flex flex-col group"}
-      id={entrypoint.key}
+      id={onexit.key}
       style={{
-        top: entrypoint.position.top,
-        left: entrypoint.position.left
+        top: onexit.position.top,
+        left: onexit.position.left
       }}
     >
       <StyledLabel className="flex flex-col items-center h-full my-auto text-gray-600 text-xs">
-        <div>entry</div>
+        <div>onExit</div>
       </StyledLabel>
     </Root>
   );
 };
 
-export default EntryPointNode;
+export default OnExitNode;

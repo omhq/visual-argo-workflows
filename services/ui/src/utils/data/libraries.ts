@@ -35,6 +35,14 @@ export const nodeLibraries: INodeGroup[] = [
         noInputs: 0,
         noOutputs: 1,
         isActive: true
+      },
+      {
+        id: 2,
+        name: "onexit",
+        type: "ONEXIT",
+        noInputs: 0,
+        noOutputs: 1,
+        isActive: true
       }
     ]
   }
