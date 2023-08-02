@@ -65,8 +65,8 @@ const nodes: Record<string, INodeItem> = {
   "template-ade474d5-ae31-4bd4-878c-0030227f8799": {
     key: "template-ade474d5-ae31-4bd4-878c-0030227f8799",
     position: {
-      top: 20,
-      left: 20
+      top: 10,
+      left: 10
     },
     inputs: ["ip_template-ade474d5-ae31-4bd4-878c-0030227f8799"],
     outputs: ["op_template-ade474d5-ae31-4bd4-878c-0030227f8799"],
@@ -98,8 +98,8 @@ const nodes: Record<string, INodeItem> = {
   "template-0e05fa26-8ac2-4cc5-920f-3a601c7f7d16": {
     key: "template-0e05fa26-8ac2-4cc5-920f-3a601c7f7d16",
     position: {
-      top: 100,
-      left: 20
+      top: 10,
+      left: 10
     },
     inputs: ["ip_template-0e05fa26-8ac2-4cc5-920f-3a601c7f7d16"],
     outputs: ["op_template-0e05fa26-8ac2-4cc5-920f-3a601c7f7d16"],
@@ -131,8 +131,8 @@ const nodes: Record<string, INodeItem> = {
   "template-b9e69a4f-b3ad-4a77-a023-4cf083e31ca0": {
     key: "template-b9e69a4f-b3ad-4a77-a023-4cf083e31ca0",
     position: {
-      top: 20,
-      left: 20
+      top: 10,
+      left: 10
     },
     inputs: ["ip_template-b9e69a4f-b3ad-4a77-a023-4cf083e31ca0"],
     outputs: ["op_template-b9e69a4f-b3ad-4a77-a023-4cf083e31ca0"],
@@ -164,8 +164,8 @@ const nodes: Record<string, INodeItem> = {
   "template-dded7d54-1b4f-4e72-9893-82b11a992864": {
     key: "template-dded7d54-1b4f-4e72-9893-82b11a992864",
     position: {
-      top: 100,
-      left: 20
+      top: 10,
+      left: 10
     },
     inputs: ["ip_template-dded7d54-1b4f-4e72-9893-82b11a992864"],
     outputs: ["op_template-dded7d54-1b4f-4e72-9893-82b11a992864"],
